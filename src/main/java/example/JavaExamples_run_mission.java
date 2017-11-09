@@ -25,28 +25,14 @@ package example;// -------------------------------------------------------------
 //                                               java -cp MalmoJavaJar.jar;example.JavaExamples_run_mission.jar -Djava.library.path=. example.JavaExamples_run_mission (on Windows)
 
 import com.microsoft.msr.malmo.*;
-import cz.adamh.utils.NativeUtils;
-
-import java.io.File;
-import java.io.IOException;
+import xyz.morecraft.dev.malmo.util.Util;
 
 public class JavaExamples_run_mission {
 
-    static {
-        final String dir = System.getenv("MALMO_XSD_PATH");
-        File f = new File(dir);
-        if (!(f.exists() && f.isDirectory())) {
-            System.err.println("BAD MALMO_XSD_PATH");
-            System.exit(-1);
-        }
-        try {
-            NativeUtils.loadLibraryFromJar("/lib/malmo-0.31.0.dll");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void main(String argv[]) {
+        Util.ensureMalmoXsdPath();
+        Util.loadMalmoLib();
+
         AgentHost agent_host = new AgentHost();
         try {
             StringVector args = new StringVector();
