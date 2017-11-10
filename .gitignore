@@ -26,6 +26,13 @@ hs_err_pid*
 .idea/
 *.iml
 
-#Own Run Scripts
+# Own Run Scripts
 setEnv.sh
 run.sh
+
+# Records
+record/
+mission_records/
+
+# Other
+ffmpeg.out
