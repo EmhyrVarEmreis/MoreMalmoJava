@@ -75,9 +75,13 @@ public class SimpleLayeredNeuralNetwork {
         return layer.getOutput();
     }
 
-    public double[] thinkOutput(double[][] trainingSetInputs) {
+    public double[][] thinkOutput(double[][] trainingSetInputs) {
         final double[][][] think = think(trainingSetInputs);
-        return think[think.length - 1][0];
+        return think[think.length - 1];
+    }
+
+    public double[] thinkSingleOutput(double[][] trainingSetInputs) {
+        return thinkOutput(trainingSetInputs)[0];
     }
 
     public double[][][] think(double[][] trainingSetInputs) {

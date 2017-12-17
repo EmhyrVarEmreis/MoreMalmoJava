@@ -6,6 +6,14 @@ import java.util.function.Function;
 @SuppressWarnings("WeakerAccess")
 public class NeuralMath {
 
+    public static double mean(double[] t) {
+        double sum = 0;
+        for (double v : t) {
+            sum += v;
+        }
+        return sum / t.length;
+    }
+
     public static double mean(double[][] t) {
         double sum = 0;
         for (double[] d : t) {
@@ -17,6 +25,10 @@ public class NeuralMath {
     }
 
     public static double[][] abs(double[][] t) {
+        return calc(t, Math::abs);
+    }
+
+    public static double[] abs(double[] t) {
         return calc(t, Math::abs);
     }
 
@@ -54,6 +66,10 @@ public class NeuralMath {
         return calc(a, b, (x, y) -> x - y);
     }
 
+    public static double[] subtract(double[] a, double[] b) {
+        return calc(a, b, (x, y) -> x - y);
+    }
+
     public static double[][] calc(double[][] t, Function<Double, Double> function) {
         final double[][] n = new double[t.length][t[0].length];
         for (int i = 0; i < n.length; i++) {
@@ -64,12 +80,28 @@ public class NeuralMath {
         return n;
     }
 
+    public static double[] calc(double[] t, Function<Double, Double> function) {
+        final double[] n = new double[t.length];
+        for (int i = 0; i < n.length; i++) {
+            n[i] = function.apply(t[i]);
+        }
+        return n;
+    }
+
     public static double[][] calc(double[][] a, double[][] b, BiFunction<Double, Double, Double> function) {
         final double[][] n = new double[a.length][a[0].length];
         for (int i = 0; i < n.length; i++) {
             for (int j = 0; j < n[0].length; j++) {
                 n[i][j] = function.apply(a[i][j], b[i][j]);
             }
+        }
+        return n;
+    }
+
+    public static double[] calc(double[] a, double[] b, BiFunction<Double, Double, Double> function) {
+        final double[] n = new double[a.length];
+        for (int i = 0; i < n.length; i++) {
+            n[i] = function.apply(a[i], b[i]);
         }
         return n;
     }
