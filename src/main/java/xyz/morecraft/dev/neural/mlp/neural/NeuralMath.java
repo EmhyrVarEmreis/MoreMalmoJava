@@ -3,6 +3,7 @@ package xyz.morecraft.dev.neural.mlp.neural;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+@SuppressWarnings("WeakerAccess")
 public class NeuralMath {
 
     public static double mean(double[][] t) {
@@ -42,7 +43,7 @@ public class NeuralMath {
     }
 
     public static double[][] multiply(double[][] a, double[][] b) {
-        return dot(a, b);
+        return calc(a, b, (x, y) -> x * y);
     }
 
     public static double[][] multiply(double factor, double[][] a) {
