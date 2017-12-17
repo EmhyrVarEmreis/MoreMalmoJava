@@ -1,4 +1,4 @@
-package xyz.morecraft.dev.neural.mlp.neural;
+package xyz.morecraft.dev.neural;
 
 import java.util.function.Function;
 

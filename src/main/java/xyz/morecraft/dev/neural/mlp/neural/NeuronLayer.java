@@ -10,6 +10,7 @@ public class NeuronLayer {
     private double[][] synapticWeights;
     private double[][] error;
     private double[][] output;
+    private double[][] input;
     private double[][] delta;
     private double[][] adjustment;
 
@@ -44,4 +45,7 @@ public class NeuronLayer {
         }
     }
 
+    public void setInput(double[][] input) {
+        this.input = input;
+    }
 }

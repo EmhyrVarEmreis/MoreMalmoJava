@@ -1,6 +1,7 @@
 package xyz.morecraft.dev.neural.mlp.neural;
 
 import lombok.Data;
+import xyz.morecraft.dev.neural.ActivationFunction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,15 +11,15 @@ import java.util.function.Function;
 @Data
 public class SimpleLayeredNeuralNetwork {
 
+    private final Function<NeuronLayer, ActivationFunction> activationFunctionSupplier;
+
     private final List<NeuronLayer> layers;
 
     private double error;
     private double trainFactor;
 
-    private Function<Double, Double> activationFunction = FunctionConstants.SIGMOID;
-    private Function<Double, Double> activationFunctionDerivative = FunctionConstants.SIGMOID_DERIVATIVE;
-
-    public SimpleLayeredNeuralNetwork() {
+    public SimpleLayeredNeuralNetwork(final Function<NeuronLayer, ActivationFunction> activationFunctionSupplier) {
+        this.activationFunctionSupplier = activationFunctionSupplier;
         this.layers = new ArrayList<>();
         this.error = Double.MAX_VALUE;
         this.trainFactor = 1.0;
@@ -50,12 +51,11 @@ public class SimpleLayeredNeuralNetwork {
             if (Objects.isNull(prevLayer)) {
                 layer.setError(NeuralMath.subtract(trainingSetOutputs, layer.getOutput()));
                 error = NeuralMath.mean(NeuralMath.abs(layer.getError()));
-                //System.out.println(String.format("a %+.5f", NeuralMath.mean(layer.getError())));
             } else {
                 layer.setError(NeuralMath.dot(prevLayer.getDelta(), NeuralMath.transpose(prevLayer.getSynapticWeights())));
-                //System.out.println(String.format("b %+.5f", NeuralMath.mean(layer.getError())));
             }
-            layer.setDelta(NeuralMath.multiply(layer.getError(), NeuralMath.calc(layer.getOutput(), activationFunctionDerivative)));
+            final ActivationFunction activationFunction = activationFunctionSupplier.apply(layer);
+            layer.setDelta(NeuralMath.multiply(layer.getError(), NeuralMath.calc(layer.getOutput(), activationFunction::derivative)));
             if (Objects.isNull(nextLayer)) {
                 layer.setAdjustment(NeuralMath.multiply(trainFactor, NeuralMath.dot(NeuralMath.transpose(trainingSetInputs), layer.getDelta())));
             } else {
@@ -69,8 +69,9 @@ public class SimpleLayeredNeuralNetwork {
         }
     }
 
-    private double[][] thinkLayer(double[][] trainingSetInputs, NeuronLayer layer) {
-        layer.setOutput(NeuralMath.calc(NeuralMath.dot(trainingSetInputs, layer.getSynapticWeights()), activationFunction));
+    private double[][] thinkLayer(double[][] input, NeuronLayer layer) {
+        layer.setInput(input);
+        layer.setOutput(NeuralMath.calc(NeuralMath.dot(input, layer.getSynapticWeights()), activationFunctionSupplier.apply(layer)::function));
         return layer.getOutput();
     }
 
