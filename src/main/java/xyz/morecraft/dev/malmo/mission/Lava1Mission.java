@@ -1,10 +1,12 @@
 package xyz.morecraft.dev.malmo.mission;
 
 import com.microsoft.msr.malmo.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.morecraft.dev.malmo.proto.Mission;
 import xyz.morecraft.dev.malmo.util.IntPoint3D;
+import xyz.morecraft.dev.malmo.util.TerrainGen;
 import xyz.morecraft.dev.malmo.util.TimestampedStringWrapper;
 
 import java.util.Locale;
@@ -15,7 +17,6 @@ public class Lava1Mission extends Mission {
 
     private final static String OBSERVE_GRID_1 = "og1";
     private final static String OBSERVE_DISTANCE_1 = "End";
-    private final static IntPoint3D p1 = new IntPoint3D(0, 227, 19);
     private final static float tol = 0.25f;
 
     public Lava1Mission(String[] argv) {
@@ -25,7 +26,7 @@ public class Lava1Mission extends Mission {
     @Override
     protected WorldState step() {
         try {
-            getAgentHost().sendCommand("move 0.5");
+//            getAgentHost().sendCommand("move 0.5");
             Thread.sleep(250);
             final WorldState worldState = getAgentHost().peekWorldState();
             final TimestampedStringVector observations = worldState.getObservations();
@@ -58,19 +59,16 @@ public class Lava1Mission extends Mission {
     @Override
     protected MissionSpec initMissionSpec() {
         MissionSpec missionSpec = new MissionSpec();
-        missionSpec.timeLimitInSeconds(5);
-        missionSpec.observeGrid(-1, -1, -1, 1, -1, 1, OBSERVE_GRID_1);
-        missionSpec.observeDistance(p1.x + 0.5f, p1.y + 1, p1.z + 0.5f, OBSERVE_DISTANCE_1);
-        missionSpec.startAt(0.5f, 228, 15.5f);
-        missionSpec.setTimeOfDay(12000, false);
+        missionSpec.timeLimitInSeconds(1);
 
-        missionSpec.drawCuboid(-50, 227, -50, 50, 237, 50, "air");
-        missionSpec.drawCuboid(-5, 227, -2, 5, 227, 20, "stone"); // floor
-        missionSpec.drawCuboid(-5, 227, -2, 5, 237, -2, "stone"); // back wall
-        missionSpec.drawCuboid(-5, 227, 20, 5, 237, 20, "stone"); // front wall
-        missionSpec.drawCuboid(-5, 227, -2, -5, 237, 20, "stone"); // r wall
-        missionSpec.drawCuboid(5, 227, -2, 5, 237, 20, "stone"); // l wall
-        missionSpec.drawBlock(p1.x, p1.y, p1.z, "grass");
+        TerrainGen.generator.setSeed(666);
+//        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.emptyRoomWithLava(missionSpec, 21, 50, 1);
+        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.maze(missionSpec, 21, 50);
+
+        missionSpec.observeGrid(-1, -1, -1, 1, -1, 1, OBSERVE_GRID_1);
+        missionSpec.observeDistance(p.getRight().x + 0.5f, p.getRight().y + 1, p.getRight().z + 0.5f, OBSERVE_DISTANCE_1);
+        missionSpec.startAt(p.getLeft().x, p.getLeft().y, p.getLeft().z);
+        missionSpec.setTimeOfDay(12000, false);
 
         return missionSpec;
     }
