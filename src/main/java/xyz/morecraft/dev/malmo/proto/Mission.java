@@ -1,11 +1,20 @@
 package xyz.morecraft.dev.malmo.proto;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.microsoft.msr.malmo.*;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.morecraft.dev.neural.mlp.neural.InputOutputBundle;
 
-public abstract class Mission {
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.LinkedList;
+import java.util.List;
+
+public abstract class Mission<Record> {
 
     private static Logger log = LoggerFactory.getLogger(Mission.class);
 
@@ -17,9 +26,12 @@ public abstract class Mission {
     private MissionSpec missionSpec;
     @Getter
     private MissionRecordSpec missionRecordSpec;
+    @Getter
+    private List<Record> recordList;
 
     public Mission(String[] argv) {
         this.argv = argv;
+        this.recordList = new LinkedList<>();
     }
 
     protected abstract WorldState step();
@@ -30,7 +42,15 @@ public abstract class Mission {
 
     protected abstract MissionRecordSpec initMissionRecordSpec();
 
-    public void run() {
+    protected InputOutputBundle getTrainingSetFromJson() {
+        throw new UnsupportedOperationException();
+    }
+
+    protected void record(Record record) {
+        this.recordList.add(record);
+    }
+
+    public void run() throws IOException {
         log.info("Waiting for the mission to start");
 
         agentHost = initAgentHost();
@@ -66,6 +86,19 @@ public abstract class Mission {
         do {
             worldState = step();
         } while (worldState.getIsMissionRunning());
+
+        final String lastJson = "record/last.json";
+        final String lastNeural = "record/last.neural.json";
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+
+        try (Writer writer = new FileWriter(lastJson)) {
+            gson.toJson(recordList, writer);
+        }
+
+        try (Writer writer = new FileWriter(lastNeural)) {
+            gson.toJson(getTrainingSetFromJson(), writer);
+        }
 
         log.info("Mission has stopped.");
     }
