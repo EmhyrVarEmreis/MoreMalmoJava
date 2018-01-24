@@ -2,6 +2,11 @@ package test;
 
 import xyz.morecraft.dev.malmo.util.MazeGenerator;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+
 public class Maze {
 
     public static void main(String[] args) {
@@ -15,6 +20,17 @@ public class Maze {
             }
             System.out.println();
         }
+
+        Double[] a = new Double[]{1.0, 2.0, 3.0};
+        Double[] b = new Double[]{1.0, 2.0, 3.0};
+        Set<Double[]> s = new TreeSet<>((o1, o2) -> {
+            HashSet<Double> set1 = new HashSet<>(Arrays.asList(o1));
+            HashSet<Double> set2 = new HashSet<>(Arrays.asList(o2));
+            return set1.equals(set2) ? 0 : 1;
+        });
+        s.add(a);
+        s.add(b);
+        System.out.println(s.size());
     }
 
 }

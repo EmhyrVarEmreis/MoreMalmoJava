@@ -2,6 +2,8 @@ package xyz.morecraft.dev.neural.mlp.neural;
 
 import lombok.Data;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 @Data
 public class NeuronLayer {
 
@@ -42,6 +44,13 @@ public class NeuronLayer {
             for (int j = 0; j < synapticWeights[i].length; j++) {
                 synapticWeights[i][j] += adjustment[i][j];
             }
+        }
+    }
+
+    public void mutate() {
+        final ThreadLocalRandom current = ThreadLocalRandom.current();
+        for (int i = 0; i < (current.nextInt((numberOfInputsPerNeuron * numberOfNeurons) < 3 ? 1 : 3) + 1); i++) {
+            synapticWeights[current.nextInt(numberOfInputsPerNeuron)][current.nextInt(numberOfNeurons)] *= (current.nextBoolean() ? 1 : -1) * 0.1;
         }
     }
 

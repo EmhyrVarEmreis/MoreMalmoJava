@@ -8,9 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.morecraft.dev.neural.mlp.neural.InputOutputBundle;
 
+import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,7 +36,7 @@ public abstract class Mission<Record> {
         this.recordList = new LinkedList<>();
     }
 
-    protected abstract WorldState step();
+    protected abstract WorldState step() throws Exception;
 
     protected abstract AgentHost initAgentHost();
 
@@ -42,7 +44,11 @@ public abstract class Mission<Record> {
 
     protected abstract MissionRecordSpec initMissionRecordSpec();
 
-    protected InputOutputBundle getTrainingSetFromJson() {
+    protected InputOutputBundle getTrainingSetFromRecord(List<Record> recordList) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected Type getRecordListTypeToken() {
         throw new UnsupportedOperationException();
     }
 
@@ -50,7 +56,7 @@ public abstract class Mission<Record> {
         this.recordList.add(record);
     }
 
-    public void run() throws IOException {
+    public void run() throws Exception {
         log.info("Waiting for the mission to start");
 
         agentHost = initAgentHost();
@@ -87,20 +93,25 @@ public abstract class Mission<Record> {
             worldState = step();
         } while (worldState.getIsMissionRunning());
 
-        final String lastJson = "record/last.json";
-        final String lastNeural = "record/last.neural.json";
+        if (recordList.size() > 0) {
+            final String lastJson = "record/last.json";
+            final String lastNeural = "record/last.neural.json";
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+            Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
-        try (Writer writer = new FileWriter(lastJson)) {
-            gson.toJson(recordList, writer);
-        }
+            try (Writer writer = new FileWriter(lastJson)) {
+                gson.toJson(recordList, writer);
+            }
 
-        try (Writer writer = new FileWriter(lastNeural)) {
-            gson.toJson(getTrainingSetFromJson(), writer);
+            try (Writer writer = new FileWriter(lastNeural)) {
+                try (Reader reader = new FileReader(lastJson)) {
+                    gson.toJson(getTrainingSetFromRecord(gson.fromJson(reader, getRecordListTypeToken())), writer);
+                }
+            }
         }
 
         log.info("Mission has stopped.");
+        System.exit(0);
     }
 
 }

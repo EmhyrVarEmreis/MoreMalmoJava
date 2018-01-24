@@ -1,8 +1,15 @@
 package xyz.morecraft.dev.neural.mlp.neural;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.Data;
 import xyz.morecraft.dev.neural.ActivationFunction;
+import xyz.morecraft.dev.neural.mlp.functions.SoftMax;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,12 +18,18 @@ import java.util.function.Function;
 @Data
 public class SimpleLayeredNeuralNetwork {
 
-    private final Function<NeuronLayer, ActivationFunction> activationFunctionSupplier;
+    private transient final static Gson gson = new GsonBuilder().create();
+
+    private transient final Function<NeuronLayer, ActivationFunction> activationFunctionSupplier;
 
     private final List<NeuronLayer> layers;
 
     private double error;
     private double trainFactor;
+
+    public SimpleLayeredNeuralNetwork() {
+        this(SoftMax::new);
+    }
 
     public SimpleLayeredNeuralNetwork(final Function<NeuronLayer, ActivationFunction> activationFunctionSupplier) {
         this.activationFunctionSupplier = activationFunctionSupplier;
@@ -30,9 +43,7 @@ public class SimpleLayeredNeuralNetwork {
     }
 
     public void rebuild() {
-        for (NeuronLayer layer : layers) {
-            layer.randomize();
-        }
+        layers.forEach(NeuronLayer::randomize);
     }
 
     public void train(double[][] trainingSetInputs, double[][] trainingSetOutputs, int numberOfTrainingIterations) {
@@ -93,4 +104,18 @@ public class SimpleLayeredNeuralNetwork {
         return outputs.toArray(new double[outputs.size()][outputs.get(0).length][outputs.get(0)[0].length]);
     }
 
+    public void mutate() {
+        layers.forEach(NeuronLayer::mutate);
+    }
+
+    public void toFile(String path) throws IOException {
+        final FileWriter writer = new FileWriter(path);
+        gson.toJson(this, writer);
+        writer.flush();
+        writer.close();
+    }
+
+    public static SimpleLayeredNeuralNetwork fromFile(String path) throws FileNotFoundException {
+        return gson.fromJson(new FileReader(path), SimpleLayeredNeuralNetwork.class);
+    }
 }

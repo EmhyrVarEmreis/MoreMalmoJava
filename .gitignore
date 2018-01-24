@@ -35,4 +35,5 @@ record/
 mission_records/
 
 # Other
+tmp/
 ffmpeg.out

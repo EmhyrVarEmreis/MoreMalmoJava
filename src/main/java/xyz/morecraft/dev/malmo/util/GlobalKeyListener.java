@@ -1,6 +1,5 @@
 package xyz.morecraft.dev.malmo.util;
 
-import lombok.Getter;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -16,7 +15,6 @@ public class GlobalKeyListener implements NativeKeyListener {
 
     private static org.slf4j.Logger log = LoggerFactory.getLogger(GlobalKeyListener.class);
 
-    @Getter
     private Set<String> keySet;
 
     public GlobalKeyListener() {
@@ -31,6 +29,10 @@ public class GlobalKeyListener implements NativeKeyListener {
             System.exit(1);
         }
         GlobalScreen.addNativeKeyListener(this);
+    }
+
+    public Set<String> getKeySet() {
+        return new HashSet<>(keySet);
     }
 
     public void nativeKeyPressed(NativeKeyEvent e) {
