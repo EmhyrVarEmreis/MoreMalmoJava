@@ -8,6 +8,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
+import org.deeplearning4j.eval.Evaluation;
+import org.deeplearning4j.nn.api.OptimizationAlgorithm;
+import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.util.ModelSerializer;
+import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.morecraft.dev.malmo.proto.Mission;
@@ -19,6 +34,7 @@ import xyz.morecraft.dev.neural.mlp.neural.InputOutputBundle;
 import xyz.morecraft.dev.neural.mlp.neural.SimpleLayeredNeuralNetwork;
 
 import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,19 +51,29 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
 
     private SimpleLayeredNeuralNetwork network;
 
-    public Lava1Mission(String[] argv) {
+    private final static String multiLayerNetworkPath = "record/multiLayerNetwork.model";
+    private MultiLayerNetwork multiLayerNetwork;
+
+    private static boolean isRecord = false;
+    private static boolean isDL4J = true;
+
+    public Lava1Mission(String[] argv) throws IOException {
         super(argv);
+        if (!isRecord) {
+            if (isDL4J) {
+                initDL4J();
+            }
+        }
     }
 
     @Override
     protected WorldState step() throws Exception {
-        return stepReplay();
-//        return stepRecord();
+        return isRecord ? stepRecord() : (isDL4J ? stepReplayDL4J() : stepReplay());
     }
 
     private WorldState stepRecord() throws Exception {
 //            getAgentHost().sendCommand("move 0.5");
-        Thread.sleep(333);
+        Thread.sleep(500);
         final WorldState worldState = getAgentHost().peekWorldState();
         final TimestampedStringVector observations = worldState.getObservations();
         for (int i = 0; i < observations.size(); i++) {
@@ -104,6 +130,115 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
         return worldState;
     }
 
+    private WorldState stepReplayDL4J() throws Exception {
+//        ComputationGraph computationGraph = ModelSerializer.restoreComputationGraph(multiLayerNetworkPath);
+        final WorldState worldState = getAgentHost().peekWorldState();
+
+        final TimestampedStringVector observations = worldState.getObservations();
+        for (int i = 0; i < observations.size(); i++) {
+            final TimestampedString o = worldState.getObservations().get(i);
+            final TimestampedStringWrapper ow = new TimestampedStringWrapper(o);
+            final double[] grid = normalizeGrid(ow.getGrid(OBSERVE_GRID_1, 3, 1, 3));
+
+            final INDArray input = Nd4j.zeros(9);
+            for (int j = 0; j < grid.length; j++) {
+                input.putScalar(j, grid[j] == 1 ? 1 : 0);
+            }
+
+            INDArray output = multiLayerNetwork.output(input);
+            System.out.println(output);
+            if (output.getDouble(0) > 0.6) {
+                getAgentHost().sendCommand("strafe 0");
+                getAgentHost().sendCommand("move 0.75");
+            } else {
+                getAgentHost().sendCommand("move 0");
+                if (output.getDouble(1) > output.getDouble(2)) {
+                    getAgentHost().sendCommand("strafe -0.75");
+                } else {
+                    getAgentHost().sendCommand("strafe 0.75");
+                }
+            }
+
+        }
+
+        Thread.sleep(500);
+        return worldState;
+    }
+
+    private void initDL4J() throws IOException {
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .iterations(1000)
+                .useDropConnect(false)
+                .weightInit(WeightInit.XAVIER)
+                .activation(Activation.RELU)
+                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                .biasInit(0)
+                .miniBatch(true)
+                .learningRate(0.05)
+                .list()
+                .layer(0,
+                        new DenseLayer.Builder()
+                                .nIn(9)
+                                .nOut(6)
+                                .activation(Activation.SIGMOID)
+                                .weightInit(WeightInit.DISTRIBUTION)
+                                .dist(new UniformDistribution(0, 1))
+                                .build()
+                )
+                .layer(1,
+                        new OutputLayer.Builder()
+                                .nIn(6)
+                                .nOut(3)
+                                .activation(Activation.SOFTMAX)
+                                .weightInit(WeightInit.DISTRIBUTION)
+                                .dist(new UniformDistribution(0, 1))
+                                .build()
+                )
+                .backprop(true)
+                .pretrain(false)
+                .build();
+
+        multiLayerNetwork = new MultiLayerNetwork(conf);
+
+        Lava1Mission.Record[] records = new GsonBuilder().create().fromJson(new FileReader("record/last.json"), Lava1Mission.Record[].class);
+
+        INDArray input = Nd4j.zeros(records.length, 9);
+        INDArray output = Nd4j.zeros(records.length, 3);
+
+        for (int i = 0; i < records.length; i++) {
+            final Record record = records[i];
+            int j = 0;
+            for (String[][] strings : record.getGrid()) {
+                for (String[] string : strings) {
+                    for (String s : string) {
+                        input.putScalar(new int[]{i, j++}, "stone".equalsIgnoreCase(s) ? 0 : 1);
+                    }
+                }
+            }
+            Collection<String> keys = record.getKeys();
+            output.putScalar(i, 0, keys.contains("W") ? 1 : 0);
+            output.putScalar(i, 1, keys.contains("A") ? 1 : 0);
+            output.putScalar(i, 2, keys.contains("D") ? 1 : 0);
+        }
+
+        DataSet ds = new DataSet(input, output);
+
+        multiLayerNetwork.setListeners(new ScoreIterationListener(100));
+
+        multiLayerNetwork.fit(
+                ds
+        );
+
+        INDArray result = multiLayerNetwork.output(ds.getFeatureMatrix());
+        System.out.println(result);
+
+        Evaluation eval = new Evaluation(3);
+        eval.eval(ds.getLabels(), result);
+        System.out.println(eval.stats());
+
+        ModelSerializer.writeModel(multiLayerNetwork, multiLayerNetworkPath, false);
+    }
+
     @Override
     protected AgentHost initAgentHost() {
         return new AgentHost();
@@ -112,10 +247,11 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
     @Override
     protected MissionSpec initMissionSpec() {
         MissionSpec missionSpec = new MissionSpec();
-        missionSpec.timeLimitInSeconds(25);
+        missionSpec.timeLimitInSeconds(60);
 
         TerrainGen.generator.setSeed(666);
-        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.emptyRoomWithLava(missionSpec, 21, 50, 1);
+//        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 150, 1, "lava", 0);
+        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 200, 1, "dirt", 1);
 //        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.maze(missionSpec, 21, 50);
 
         missionSpec.observeGrid(-1, -1, -1, 1, -1, 1, OBSERVE_GRID_1);
@@ -213,7 +349,7 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
         int i = 0;
         for (String[] strings : grid[0]) {
             for (String string : strings) {
-                t[i++] = string.equalsIgnoreCase("lava") ? 1 : 0;
+                t[i++] = string.equalsIgnoreCase("stone") ? 0 : 1;
             }
         }
         return t;

@@ -5,6 +5,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Random;
+import java.util.function.BiConsumer;
 
 public class TerrainGen {
 
@@ -21,6 +22,24 @@ public class TerrainGen {
         spec.drawBlock((int) p1.x, (int) p1.y, (int) p1.z, "grass");
         spec.drawBlock((int) p2.x, (int) p2.y, (int) p2.z, "glowstone");
         boolean isStep = true;
+
+        BiConsumer<Integer, Integer> drawer;
+        if (yOffset > 0) {
+            drawer = (x, z) -> {
+                for (int i = h; i <= (h + yOffset); i++) {
+                    spec.drawBlock(x, i, z, block);
+                }
+            };
+        } else if (yOffset < 0) {
+            drawer = (x, z) -> {
+                for (int i = h + yOffset; i <= h; i++) {
+                    spec.drawBlock(x, i, z, block);
+                }
+            };
+        } else {
+            drawer = (x, z) -> spec.drawBlock(x, h + yOffset, z, block);
+        }
+
         for (int z = 0; z < zL; z++) {
             if (isStep) {
                 z += randInt(0, stepDistance);
@@ -29,7 +48,7 @@ public class TerrainGen {
                     if (generator.nextBoolean()) {
                         final int xx = randInt(1, 4);
                         for (int i = 0; i < xx; i++) {
-                            spec.drawBlock(x, h + yOffset, z, block);
+                            drawer.accept(x, z);
                             x++;
                         }
                     }
