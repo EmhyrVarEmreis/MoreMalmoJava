@@ -10,9 +10,9 @@ public class TerrainGen {
 
     public static Random generator = new Random();
 
-    public static Pair<IntPoint3D, IntPoint3D> emptyRoomWithLava(MissionSpec spec, int xL, int zL, int stepDistance) {
-        final int h = 230;
-        final int hMax = 238;
+    public static Pair<IntPoint3D, IntPoint3D> emptyRoomWithTransverseObstacles(MissionSpec spec, int xL, int zL, int stepDistance, String block, int yOffset) {
+        final int h = 80;
+        final int hMax = 90;
         final IntPoint3D p1 = new IntPoint3D((int) Math.round(xL / 2.0), h, 0);
         final IntPoint3D p2 = new IntPoint3D((int) Math.round(xL / 2.0), h, zL - 1);
         spec.drawCuboid(-1, h - 1, -1, xL + 1, hMax, zL + 1, "stone");
@@ -29,7 +29,7 @@ public class TerrainGen {
                     if (generator.nextBoolean()) {
                         final int xx = randInt(1, 4);
                         for (int i = 0; i < xx; i++) {
-                            spec.drawBlock(x, h, z, "lava");
+                            spec.drawBlock(x, h + yOffset, z, block);
                             x++;
                         }
                     }
