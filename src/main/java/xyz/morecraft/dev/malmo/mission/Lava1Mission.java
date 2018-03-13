@@ -45,6 +45,7 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
 
     private final static String OBSERVE_GRID_1 = "og1";
     private final static String OBSERVE_DISTANCE_1 = "End";
+    private final static int OBSERVE_GRID_1_RADIUS = 5;
     private final static float tol = 0.25f;
 
     private final GlobalKeyListener globalKeyListener = new GlobalKeyListener();
@@ -80,7 +81,7 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
             final TimestampedString o = observations.get(i);
             final TimestampedStringWrapper ow = new TimestampedStringWrapper(o);
             final float distance = ow.getDistance(OBSERVE_DISTANCE_1);
-            final Record record = new Record(globalKeyListener.getKeySet(), ow.getGrid(OBSERVE_GRID_1, 3, 1, 3));
+            final Record record = new Record(globalKeyListener.getKeySet(), ow.getGrid(OBSERVE_GRID_1, OBSERVE_GRID_1_RADIUS, 1, OBSERVE_GRID_1_RADIUS));
             record(record);
             log.info(
                     "received: keys=[{}], distance={}, grid={}",
@@ -106,7 +107,7 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
         for (int i = 0; i < observations.size(); i++) {
             final TimestampedString o = worldState.getObservations().get(i);
             final TimestampedStringWrapper ow = new TimestampedStringWrapper(o);
-            double[] output = network.thinkOutput(new double[][]{normalizeGrid(ow.getGrid(OBSERVE_GRID_1, 3, 1, 3))})[0];
+            double[] output = network.thinkOutput(new double[][]{normalizeGrid(ow.getGrid(OBSERVE_GRID_1, OBSERVE_GRID_1_RADIUS, 1, OBSERVE_GRID_1_RADIUS))})[0];
 
             int max = 0;
             for (int j = 0; j < output.length; j++) {
@@ -138,9 +139,9 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
         for (int i = 0; i < observations.size(); i++) {
             final TimestampedString o = worldState.getObservations().get(i);
             final TimestampedStringWrapper ow = new TimestampedStringWrapper(o);
-            final double[] grid = normalizeGrid(ow.getGrid(OBSERVE_GRID_1, 3, 1, 3));
+            final double[] grid = normalizeGrid(ow.getGrid(OBSERVE_GRID_1, OBSERVE_GRID_1_RADIUS, 1, OBSERVE_GRID_1_RADIUS));
 
-            final INDArray input = Nd4j.zeros(9);
+            final INDArray input = Nd4j.zeros(OBSERVE_GRID_1_RADIUS * OBSERVE_GRID_1_RADIUS);
             for (int j = 0; j < grid.length; j++) {
                 input.putScalar(j, grid[j] == 1 ? 1 : 0);
             }
@@ -166,28 +167,56 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
     }
 
     private void initDL4J() throws IOException {
+        int layerNum = 0;
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .iterations(1000)
-                .useDropConnect(false)
+                .iterations(2500)
+                .useDropConnect(true)
                 .weightInit(WeightInit.XAVIER)
                 .activation(Activation.RELU)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .biasInit(0)
+                .biasInit(1)
                 .miniBatch(true)
-                .learningRate(0.05)
+                .learningRate(0.1)
                 .list()
-                .layer(0,
+                .layer(layerNum++,
                         new DenseLayer.Builder()
-                                .nIn(9)
-                                .nOut(6)
+                                .nIn(OBSERVE_GRID_1_RADIUS * OBSERVE_GRID_1_RADIUS)
+                                .nOut(50)
                                 .activation(Activation.SIGMOID)
                                 .weightInit(WeightInit.DISTRIBUTION)
                                 .dist(new UniformDistribution(0, 1))
                                 .build()
                 )
-                .layer(1,
+                .layer(layerNum++,
+                        new DenseLayer.Builder()
+                                .nIn(50)
+                                .nOut(30)
+                                .activation(Activation.SIGMOID)
+                                .weightInit(WeightInit.DISTRIBUTION)
+                                .dist(new UniformDistribution(0, 1))
+                                .build()
+                )
+                .layer(layerNum++,
+                        new DenseLayer.Builder()
+                                .nIn(30)
+                                .nOut(18)
+                                .activation(Activation.SIGMOID)
+                                .weightInit(WeightInit.DISTRIBUTION)
+                                .dist(new UniformDistribution(0, 1))
+                                .build()
+                )
+                .layer(layerNum++,
+                        new DenseLayer.Builder()
+                                .nIn(18)
+                                .nOut(9)
+                                .activation(Activation.SIGMOID)
+                                .weightInit(WeightInit.DISTRIBUTION)
+                                .dist(new UniformDistribution(0, 1))
+                                .build()
+                )
+                .layer(layerNum,
                         new OutputLayer.Builder()
-                                .nIn(6)
+                                .nIn(9)
                                 .nOut(3)
                                 .activation(Activation.SOFTMAX)
                                 .weightInit(WeightInit.DISTRIBUTION)
@@ -200,9 +229,14 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
 
         multiLayerNetwork = new MultiLayerNetwork(conf);
 
-        Lava1Mission.Record[] records = new GsonBuilder().create().fromJson(new FileReader("record/last.json"), Lava1Mission.Record[].class);
+        Lava1Mission.Record[] rawRecords = new GsonBuilder().create().fromJson(new FileReader("record/last.json"), Lava1Mission.Record[].class);
 
-        INDArray input = Nd4j.zeros(records.length, 9);
+        Lava1Mission.Record[] records = Arrays.stream(rawRecords)
+                .filter(record -> !record.getKeys().isEmpty())
+                .filter(record -> record.getKeys().size() == 1)
+                .toArray(Record[]::new);
+
+        INDArray input = Nd4j.zeros(records.length, OBSERVE_GRID_1_RADIUS * OBSERVE_GRID_1_RADIUS);
         INDArray output = Nd4j.zeros(records.length, 3);
 
         for (int i = 0; i < records.length; i++) {
@@ -254,7 +288,8 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
         final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 200, 1, "dirt", 1);
 //        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.maze(missionSpec, 21, 50);
 
-        missionSpec.observeGrid(-1, -1, -1, 1, -1, 1, OBSERVE_GRID_1);
+        final int r = Math.floorDiv(OBSERVE_GRID_1_RADIUS, 2);
+        missionSpec.observeGrid(-r, -1, -r, r, -1, r, OBSERVE_GRID_1);
         missionSpec.observeDistance(p.getRight().x + 0.5f, p.getRight().y + 1, p.getRight().z + 0.5f, OBSERVE_DISTANCE_1);
         missionSpec.startAt(p.getLeft().x, p.getLeft().y, p.getLeft().z);
         missionSpec.setTimeOfDay(12000, false);
@@ -345,7 +380,7 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
     }
 
     private double[] normalizeGrid(String[][][] grid) {
-        final double[] t = new double[9];
+        final double[] t = new double[OBSERVE_GRID_1_RADIUS * OBSERVE_GRID_1_RADIUS];
         int i = 0;
         for (String[] strings : grid[0]) {
             for (String string : strings) {
