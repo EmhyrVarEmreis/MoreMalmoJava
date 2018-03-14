@@ -42,8 +42,10 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
     private static Logger log = LoggerFactory.getLogger(Lava1Mission.class);
 
     private final static String OBSERVE_GRID_1 = "og1";
+    private final static String OBSERVE_GRID_2 = "og2";
     private final static String OBSERVE_DISTANCE_1 = "End";
     private final static int OBSERVE_GRID_1_RADIUS = 7;
+    private final static int OBSERVE_GRID_2_WIDTH = 5;
     private final static float tol = 0.25f;
 
     private final GlobalKeyListener globalKeyListener = new GlobalKeyListener();
@@ -58,8 +60,11 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
 
     private GridVisualizer gridVisualizer;
 
+    private List<Float> lastDistanceQueue;
+
     public Lava1Mission(String[] argv) throws IOException {
         super(argv);
+        this.lastDistanceQueue = new ArrayList<>(10000);
         this.gridVisualizer = new GridVisualizer();
         this.gridVisualizer.setVisible(true);
         if (!isRecord) {
@@ -80,7 +85,7 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
         final WorldState worldState = getAgentHost().peekWorldState();
         final TimestampedStringVector observations = worldState.getObservations();
         for (int i = 0; i < observations.size(); i++) {
-            final TimestampedStringWrapper ow = new TimestampedStringWrapper(observations.get(i));
+            final WorldObservation ow = new WorldObservation(observations.get(i));
             final float distance = ow.getDistance(OBSERVE_DISTANCE_1);
             final Record record = new Record(globalKeyListener.getKeySet(), ow.getGrid(OBSERVE_GRID_1, OBSERVE_GRID_1_RADIUS, 1, OBSERVE_GRID_1_RADIUS));
             record(record);
@@ -106,7 +111,7 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
         Thread.sleep(50);
         final TimestampedStringVector observations = worldState.getObservations();
         for (int i = 0; i < observations.size(); i++) {
-            final TimestampedStringWrapper ow = new TimestampedStringWrapper(worldState.getObservations().get(i));
+            final WorldObservation ow = new WorldObservation(worldState.getObservations().get(i));
             double[] output = network.thinkOutput(new double[][]{normalizeGrid(ow.getGrid(OBSERVE_GRID_1, OBSERVE_GRID_1_RADIUS, 1, OBSERVE_GRID_1_RADIUS))})[0];
 
             int max = 0;
@@ -137,9 +142,10 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
 
         final TimestampedStringVector observations = worldState.getObservations();
         for (int i = 0; i < observations.size(); i++) {
-            final TimestampedString o = worldState.getObservations().get(i);
-            final TimestampedStringWrapper ow = new TimestampedStringWrapper(o);
+            final TimestampedString o = observations.get(i);
+            final WorldObservation ow = new WorldObservation(o);
             final String[][][] rawGrid = ow.getGrid(OBSERVE_GRID_1, OBSERVE_GRID_1_RADIUS, 1, OBSERVE_GRID_1_RADIUS);
+            final String[] lineGrid = ow.getGrid(OBSERVE_GRID_2, OBSERVE_GRID_2_WIDTH * 2 + 1);
             final double[] grid = normalizeGrid(rawGrid);
 
             final INDArray input = Nd4j.zeros(OBSERVE_GRID_1_RADIUS * OBSERVE_GRID_1_RADIUS);
@@ -148,6 +154,43 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
             }
 
             gridVisualizer.updateGrid(rawGrid);
+
+            lastDistanceQueue.add(ow.getDistance(OBSERVE_DISTANCE_1));
+
+            final float tolerance = 0.25f;
+            boolean areTheSame = lastDistanceQueue.size() > 15 && Math.abs(lastDistanceQueue.get(lastDistanceQueue.size() - 1) - lastDistanceQueue.get(lastDistanceQueue.size() - 6)) <= tolerance;
+            if (areTheSame) {
+
+                int dir = 0; // -1=A, 1=d
+                final int lineGridSplit = lineGrid.length / 2;
+                if (!lineGrid[lineGridSplit].equalsIgnoreCase("stone")) {
+                    for (int j = 0; j < lineGridSplit; j++) {
+                        if (lineGrid[lineGridSplit - j].equalsIgnoreCase("stone")) {
+                            dir = 1;
+                            break;
+                        } else if (lineGrid[lineGridSplit + j].equalsIgnoreCase("stone")) {
+                            dir = -1;
+                            break;
+                        }
+                    }
+                }
+
+                log.warn(
+                        "Retraining; lineGrid={}; dir={}",
+                        lineGrid,
+                        dir
+                );
+
+                multiLayerNetwork.conf().setNumIterations(1);
+                if (dir > 0) {
+                    multiLayerNetwork.fit(input, Nd4j.create(new double[]{0, 0, 1}));
+                } else if (dir < 0) {
+                    multiLayerNetwork.fit(input, Nd4j.create(new double[]{0, 1, 0}));
+                } else {
+                    multiLayerNetwork.fit(input, Nd4j.create(new double[]{1, 0, 0}));
+                }
+                lastDistanceQueue.clear();
+            }
 
             final INDArray output = multiLayerNetwork.output(input);
             final String[] keys = new String[]{"W", "A", "D"};
@@ -177,7 +220,7 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
             }
         }
 
-        Thread.sleep(250);
+        Thread.sleep(200);
         return worldState;
     }
 
@@ -304,15 +347,16 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
     @Override
     protected MissionSpec initMissionSpec() {
         MissionSpec missionSpec = new MissionSpec();
-        missionSpec.timeLimitInSeconds(60);
+        missionSpec.timeLimitInSeconds(600);
 
         TerrainGen.generator.setSeed(666);
 //        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 150, 1, "lava", 0);
-        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 200, 1, "dirt", 1);
+        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 105, 300, 1, "dirt", 1);
 //        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.maze(missionSpec, 21, 50);
 
         final int r = Math.floorDiv(OBSERVE_GRID_1_RADIUS, 2);
         missionSpec.observeGrid(-r, -1, -r, r, -1, r, OBSERVE_GRID_1);
+        missionSpec.observeGrid(-OBSERVE_GRID_2_WIDTH, -1, 1, OBSERVE_GRID_2_WIDTH, -1, 1, OBSERVE_GRID_2);
         missionSpec.observeDistance(p.getRight().x + 0.5f, p.getRight().y + 1, p.getRight().z + 0.5f, OBSERVE_DISTANCE_1);
         missionSpec.startAt(p.getLeft().x, p.getLeft().y, p.getLeft().z);
         missionSpec.setTimeOfDay(12000, false);

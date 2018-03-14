@@ -76,14 +76,14 @@ public class GridVisualizer extends JFrame {
             for (int i = 0; i < gr.length; i++) {
                 for (int j = 0; j < gr[i].length; j++) {
                     g2d.setColor(colorMap.get(gr[i][j]));
-                    g2d.fillRect(margin + (j * step) + 2, margin + (i * step) + 2, step - 3, step - 3);
+                    g2d.fillRect(margin + ((n - j - 1) * step) + 2, margin + ((n - i - 1) * step) + 2, step - 3, step - 3);
                 }
             }
 
             g2d.setColor(Color.GREEN);
 
             int ovalWidth = step / 5;
-            g2d.fillOval(margin + ((n / 2 + 1) * step) + ovalWidth*2, margin + ((n / 2 + 1) * step) + ovalWidth*2, ovalWidth, ovalWidth);
+            g2d.fillOval(margin + ((n / 2) * step) + ovalWidth * 2, margin + ((n / 2) * step) + ovalWidth * 2, ovalWidth, ovalWidth);
 
         }
 

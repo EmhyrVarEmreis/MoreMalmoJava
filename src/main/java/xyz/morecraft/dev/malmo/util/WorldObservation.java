@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class TimestampedStringWrapper {
+public class WorldObservation {
 
     private final static ObjectMapper objectMapper = Jackson.OBJECT_MAPPER;
 
@@ -19,10 +19,25 @@ public class TimestampedStringWrapper {
     @Getter
     private Map<String, Object> map;
 
-    public TimestampedStringWrapper(TimestampedString v) throws IOException {
+    public WorldObservation(TimestampedString v) throws IOException {
         this.v = v;
         this.map = objectMapper.readValue(v.getText(), new TypeReference<TreeMap<String, Object>>() {
         });
+    }
+
+    public String[] getGrid(String name, int x) {
+        final Object o = map.get(name);
+        final String[] t = new String[x];
+        if (o instanceof List) {
+            List l = List.class.cast(o);
+            int i = 0;
+            for (Object oo : l) {
+                final String s = String.class.cast(oo);
+                t[i++] = s;
+            }
+            return t;
+        }
+        return null;
     }
 
     public String[][][] getGrid(String name, int x, int y, int z) {
