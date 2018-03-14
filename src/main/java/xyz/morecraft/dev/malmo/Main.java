@@ -11,6 +11,25 @@ public class Main {
 
 //        new ExampleMission(args).run();
         new Lava1Mission(args).run();
+
+
+//        GridVisualizer gridVisualizer = new GridVisualizer();
+//        gridVisualizer.setVisible(true);
+//        String[][][] strings = {{
+//                {
+//                        "dirt", "stone", "stone"
+//                },
+//                {
+//                        "stone", "dirt", "stone"
+//                },
+//                {
+//                        "stone", "stone", "dirt"
+//                }
+//        }};
+//        for (int i = 0; i < 10000000; i++) {
+//            gridVisualizer.updateGrid(strings);
+//            Thread.sleep(1000);
+//        }
     }
 
 }
