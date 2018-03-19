@@ -5,7 +5,6 @@ import com.microsoft.msr.malmo.AgentHost;
 import com.microsoft.msr.malmo.WorldState;
 import lombok.extern.slf4j.Slf4j;
 import xyz.morecraft.dev.malmo.mission.Lava1Mission;
-import xyz.morecraft.dev.malmo.proto.Mission;
 import xyz.morecraft.dev.malmo.proto.MissionRunner;
 import xyz.morecraft.dev.malmo.util.WorldObservation;
 import xyz.morecraft.dev.neural.mlp.neural.SimpleLayeredNeuralNetwork;
@@ -14,7 +13,7 @@ import java.io.FileReader;
 import java.util.Objects;
 
 @Slf4j
-public class SimpleNeural implements MissionRunner<Lava1Mission.Record> {
+public class SimpleNeural implements MissionRunner<Lava1Mission> {
 
     private SimpleLayeredNeuralNetwork network;
 
@@ -24,7 +23,7 @@ public class SimpleNeural implements MissionRunner<Lava1Mission.Record> {
     }
 
     @Override
-    public WorldState step(AgentHost agentHost, Mission<Lava1Mission.Record> mission) throws Exception {
+    public WorldState step(AgentHost agentHost, Lava1Mission mission) throws Exception {
         final WorldState worldState = agentHost.peekWorldState();
         final WorldObservation worldObservation = WorldObservation.fromWorldState(worldState);
 

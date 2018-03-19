@@ -22,12 +22,17 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Lava1Mission extends Mission<Lava1Mission.Record> {
 
+    public final static String OBSERVE_GRID_0 = "og0";
     public final static String OBSERVE_GRID_1 = "og1";
     public final static String OBSERVE_GRID_2 = "og2";
     public final static String OBSERVE_DISTANCE_1 = "End";
+    public final static int OBSERVE_GRID_0_RADIUS = 3;
     public final static int OBSERVE_GRID_1_RADIUS = 7;
     public final static int OBSERVE_GRID_2_WIDTH = 5;
-    public final static float tol = 0.25f;
+    public final static double tol = 0.25f;
+
+    @Getter
+    private Pair<IntPoint3D, IntPoint3D> p;
 
     public Lava1Mission(String[] argv) {
         super(argv);
@@ -44,15 +49,17 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
         missionSpec.timeLimitInSeconds(600);
 
         TerrainGen.generator.setSeed(666);
-//        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 150, 1, "lava", 0);
-        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 105, 300, 1, "dirt", 1);
-//        final Pair<IntPoint3D, IntPoint3D> p = TerrainGen.maze(missionSpec, 21, 50);
+//        p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 150, 1, "lava", 0);
+        p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 105, 50, 1, "dirt", 1);
+//        p = TerrainGen.maze(missionSpec, 21, 50);
 
-        final int r = Math.floorDiv(OBSERVE_GRID_1_RADIUS, 2);
-        missionSpec.observeGrid(-r, -1, -r, r, -1, r, OBSERVE_GRID_1);
+        final int r0 = Math.floorDiv(OBSERVE_GRID_0_RADIUS, 2);
+        final int r1 = Math.floorDiv(OBSERVE_GRID_1_RADIUS, 2);
+        missionSpec.observeGrid(-r0, -1, -r0, r0, -1, r0, OBSERVE_GRID_0);
+        missionSpec.observeGrid(-r1, -1, -r1, r1, -1, r1, OBSERVE_GRID_1);
         missionSpec.observeGrid(-OBSERVE_GRID_2_WIDTH, -1, 1, OBSERVE_GRID_2_WIDTH, -1, 1, OBSERVE_GRID_2);
-        missionSpec.observeDistance(p.getRight().x + 0.5f, p.getRight().y + 1, p.getRight().z + 0.5f, OBSERVE_DISTANCE_1);
-        missionSpec.startAt(p.getLeft().x, p.getLeft().y, p.getLeft().z);
+        missionSpec.observeDistance(p.getRight().fX() + 0.5f, p.getRight().fY() + 1, p.getRight().fZ() + 0.5f, OBSERVE_DISTANCE_1);
+        missionSpec.startAt(p.getLeft().fX(), p.getLeft().fY(), p.getLeft().fZ());
         missionSpec.setTimeOfDay(12000, false);
 
         return missionSpec;

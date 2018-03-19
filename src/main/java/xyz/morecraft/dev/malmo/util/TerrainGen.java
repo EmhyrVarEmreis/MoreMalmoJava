@@ -19,8 +19,8 @@ public class TerrainGen {
         spec.drawCuboid(-1, h - 1, -1, xL + 1, hMax, zL + 1, "stone");
         spec.drawCuboid(0, h + 1, 0, xL, hMax, zL, "air");
         spec.drawCuboid(-1, hMax, -1, xL + 1, hMax, zL + 1, "glowstone");
-        spec.drawBlock((int) p1.x, (int) p1.y, (int) p1.z, "grass");
-        spec.drawBlock((int) p2.x, (int) p2.y, (int) p2.z, "glowstone");
+        spec.drawBlock(p1.iX(), p1.iY(), p1.iZ(), "grass");
+        spec.drawBlock(p2.iX(), p2.iY(), p2.iZ(), "glowstone");
         boolean isStep = true;
 
         BiConsumer<Integer, Integer> drawer;

@@ -54,7 +54,7 @@ public abstract class Mission<Record> {
         this.recordList.add(record);
     }
 
-    public void run(MissionRunner<Record> missionRunner) throws Exception {
+    public <T extends Mission<Record>> void run(MissionRunner<T> missionRunner) throws Exception {
         log.info("Waiting for the mission to start");
 
         agentHost = initAgentHost();
@@ -89,7 +89,8 @@ public abstract class Mission<Record> {
 
         do {
             Thread.sleep(missionRunner.stepInterval());
-            worldState = missionRunner.step(agentHost, this);
+            //noinspection unchecked
+            worldState = missionRunner.step(agentHost, (T) this);
         } while (worldState.getIsMissionRunning());
 
         if (recordList.size() > 0) {

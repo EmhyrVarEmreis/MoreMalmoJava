@@ -21,9 +21,9 @@ import org.nd4j.linalg.api.ops.impl.indexaccum.IAMax;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import xyz.morecraft.dev.malmo.mission.Lava1Mission;
-import xyz.morecraft.dev.malmo.proto.Mission;
 import xyz.morecraft.dev.malmo.proto.MissionRunner;
 import xyz.morecraft.dev.malmo.util.GridVisualizer;
+import xyz.morecraft.dev.malmo.util.WayUtils;
 import xyz.morecraft.dev.malmo.util.WorldObservation;
 
 import java.io.FileReader;
@@ -31,12 +31,14 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static xyz.morecraft.dev.malmo.util.BlockNames.BLOCK_STONE;
+
 @Slf4j
-public class Neural implements MissionRunner<Lava1Mission.Record> {
+public class Neural implements MissionRunner<Lava1Mission> {
 
     private final static String multiLayerNetworkPath = "record/multiLayerNetwork.model";
-    private GridVisualizer gridVisualizer = new GridVisualizer(true);
-    private List<Float> lastDistanceQueue = new ArrayList<>(10000);
+    private GridVisualizer gridVisualizer = new GridVisualizer(true, false);
+    private List<Double> lastDistanceQueue = new ArrayList<>(10000);
     private MultiLayerNetwork multiLayerNetwork;
 
     public Neural() throws IOException {
@@ -113,7 +115,7 @@ public class Neural implements MissionRunner<Lava1Mission.Record> {
             for (String[][] strings : record.getGrid()) {
                 for (String[] string : strings) {
                     for (String s : string) {
-                        input.putScalar(new int[]{i, j++}, "stone".equalsIgnoreCase(s) ? 0 : 1);
+                        input.putScalar(new int[]{i, j++}, BLOCK_STONE.equalsIgnoreCase(s) ? 0 : 1);
                     }
                 }
             }
@@ -147,7 +149,7 @@ public class Neural implements MissionRunner<Lava1Mission.Record> {
     }
 
     @Override
-    public WorldState step(AgentHost agentHost, Mission<Lava1Mission.Record> mission) throws Exception {
+    public WorldState step(AgentHost agentHost, Lava1Mission mission) throws Exception {
         final WorldState worldState = agentHost.peekWorldState();
         final WorldObservation worldObservation = WorldObservation.fromWorldState(worldState);
 
@@ -164,7 +166,7 @@ public class Neural implements MissionRunner<Lava1Mission.Record> {
             input.putScalar(j, grid[j] == 1 ? 1 : 0);
         }
 
-        gridVisualizer.updateGrid(rawGrid);
+        gridVisualizer.updateGrid(WayUtils.revertGrid(rawGrid[0], Lava1Mission.OBSERVE_GRID_1_RADIUS));
 
         lastDistanceQueue.add(worldObservation.getDistance(Lava1Mission.OBSERVE_DISTANCE_1));
 
@@ -174,12 +176,12 @@ public class Neural implements MissionRunner<Lava1Mission.Record> {
 
             int dir = 0; // -1=A, 1=d
             final int lineGridSplit = lineGrid.length / 2;
-            if (!lineGrid[lineGridSplit].equalsIgnoreCase("stone")) {
+            if (!lineGrid[lineGridSplit].equalsIgnoreCase(BLOCK_STONE)) {
                 for (int j = 0; j < lineGridSplit; j++) {
-                    if (lineGrid[lineGridSplit - j].equalsIgnoreCase("stone")) {
+                    if (lineGrid[lineGridSplit - j].equalsIgnoreCase(BLOCK_STONE)) {
                         dir = 1;
                         break;
-                    } else if (lineGrid[lineGridSplit + j].equalsIgnoreCase("stone")) {
+                    } else if (lineGrid[lineGridSplit + j].equalsIgnoreCase(BLOCK_STONE)) {
                         dir = -1;
                         break;
                     }

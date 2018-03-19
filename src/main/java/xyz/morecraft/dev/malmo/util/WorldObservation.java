@@ -41,9 +41,9 @@ public class WorldObservation {
 
     public IntPoint3D getPos() {
         return new IntPoint3D(
-                (float) map.get("XPos"),
-                (float) map.get("YPos"),
-                (float) map.get("ZPos")
+                (double) map.get("XPos"),
+                (double) map.get("YPos"),
+                (double) map.get("ZPos")
         );
     }
 
@@ -67,8 +67,8 @@ public class WorldObservation {
         return (int) map.get("DistanceTravelled");
     }
 
-    public float getLife() {
-        return (float) map.get("Life");
+    public double getLife() {
+        return (double) map.get("Life");
     }
 
     public int getMobsKilled() {
@@ -79,8 +79,8 @@ public class WorldObservation {
         return (String) map.get("Name");
     }
 
-    public float getPitch() {
-        return (float) map.get("Pitch");
+    public double getPitch() {
+        return (double) map.get("Pitch");
     }
 
     public int getPlayersKilled() {
@@ -107,8 +107,8 @@ public class WorldObservation {
         return (int) map.get("XP");
     }
 
-    public float getYaw() {
-        return (float) map.get("Yaw");
+    public double getYaw() {
+        return (double) map.get("Yaw");
     }
 
     public String[] getGrid(String name, int x) {
@@ -145,8 +145,8 @@ public class WorldObservation {
         return null;
     }
 
-    public float getDistance(String name) {
-        return (float) Double.class.cast(map.get("distanceFrom" + name)).doubleValue();
+    public double getDistance(String name) {
+        return Double.class.cast(map.get("distanceFrom" + name));
     }
 
 }

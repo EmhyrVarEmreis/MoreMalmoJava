@@ -5,17 +5,19 @@ import java.awt.*;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static xyz.morecraft.dev.malmo.util.BlockNames.*;
+
 public class GridVisualizer extends JFrame {
 
     private GridVisualizerPanel gridVisualizerPanel;
 
     public GridVisualizer() throws HeadlessException {
-        this(false);
+        this(false, false);
     }
 
-    public GridVisualizer(boolean isVisible) throws HeadlessException {
+    public GridVisualizer(boolean isVisible, boolean alwaysOnTop) throws HeadlessException {
         setTitle("GridVisualizer");
-        setSize(800, 605);
+        setSize(300, 300);
         setResizable(false);
         setLocationRelativeTo(null);
         setLayout(null);
@@ -28,10 +30,11 @@ public class GridVisualizer extends JFrame {
         gridVisualizerPanel = new GridVisualizerPanel();
         add(gridVisualizerPanel);
 
+        setAlwaysOnTop(alwaysOnTop);
         setVisible(isVisible);
     }
 
-    public synchronized void updateGrid(String[][][] grid) {
+    public synchronized void updateGrid(String[][] grid) {
         this.gridVisualizerPanel.setGrid(grid);
         this.repaint();
     }
@@ -46,10 +49,10 @@ public class GridVisualizer extends JFrame {
 
     private static class GridVisualizerPanel extends JPanel {
 
-        private String[][][] grid;
+        private String[][] grid;
         private static final Map<String, Color> colorMap;
 
-        public void setGrid(String[][][] grid) {
+        public void setGrid(String[][] grid) {
             this.grid = grid;
             this.repaint();
         }
@@ -64,8 +67,7 @@ public class GridVisualizer extends JFrame {
                 return;
             }
 
-            final String[][] gr = grid[0];
-            final int n = gr.length;
+            final int n = grid.length;
             final int maxDim = this.getHeight() > this.getWidth() ? this.getWidth() : this.getHeight();
             final int dim = maxDim * 9 / 10;
             final int margin = (maxDim - dim) / 2;
@@ -78,10 +80,10 @@ public class GridVisualizer extends JFrame {
                 g2d.drawLine(margin, margin + (i1 * step), dim + margin - 2, margin + i1 * step);
             }
 
-            for (int i = 0; i < gr.length; i++) {
-                for (int j = 0; j < gr[i].length; j++) {
-                    g2d.setColor(colorMap.get(gr[i][j]));
-                    g2d.fillRect(margin + ((n - j - 1) * step) + 2, margin + ((n - i - 1) * step) + 2, step - 3, step - 3);
+            for (int i = 0; i < grid.length; i++) {
+                for (int j = 0; j < grid[i].length; j++) {
+                    g2d.setColor(colorMap.getOrDefault(grid[i][j], Color.BLACK));
+                    g2d.fillRect(margin + (j * step) + 2, margin + (i * step) + 2, step - 3, step - 3);
                 }
             }
 
@@ -94,8 +96,10 @@ public class GridVisualizer extends JFrame {
 
         static {
             colorMap = new TreeMap<>(String::compareToIgnoreCase);
-            colorMap.put("stone", Color.GRAY);
-            colorMap.put("dirt", new Color(139, 69, 19));
+            colorMap.put(BLOCK_STONE, Color.GRAY);
+            colorMap.put(BLOCK_GLOWSTONE, Color.YELLOW);
+            colorMap.put(BLOCK_GRASS, new Color(0, 100, 0));
+            colorMap.put(BLOCK_DIRT, new Color(139, 69, 19));
         }
 
     }
