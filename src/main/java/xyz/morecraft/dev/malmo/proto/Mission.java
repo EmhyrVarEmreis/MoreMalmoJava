@@ -36,8 +36,6 @@ public abstract class Mission<Record> {
         this.recordList = new LinkedList<>();
     }
 
-    protected abstract WorldState step() throws Exception;
-
     protected abstract AgentHost initAgentHost();
 
     protected abstract MissionSpec initMissionSpec();
@@ -52,11 +50,11 @@ public abstract class Mission<Record> {
         throw new UnsupportedOperationException();
     }
 
-    protected void record(Record record) {
+    public void record(Record record) {
         this.recordList.add(record);
     }
 
-    public void run() throws Exception {
+    public void run(MissionRunner<Record> missionRunner) throws Exception {
         log.info("Waiting for the mission to start");
 
         agentHost = initAgentHost();
@@ -83,14 +81,15 @@ public abstract class Mission<Record> {
                 log.error("User interrupted while waiting for mission to start.");
                 return;
             }
-            worldState = agentHost.getWorldState();
+            worldState = agentHost.peekWorldState();
             for (int i = 0; i < worldState.getErrors().size(); i++) {
                 log.error("Error: " + worldState.getErrors().get(i).getText());
             }
         } while (!worldState.getIsMissionRunning());
 
         do {
-            worldState = step();
+            Thread.sleep(missionRunner.stepInterval());
+            worldState = missionRunner.step(agentHost, this);
         } while (worldState.getIsMissionRunning());
 
         if (recordList.size() > 0) {

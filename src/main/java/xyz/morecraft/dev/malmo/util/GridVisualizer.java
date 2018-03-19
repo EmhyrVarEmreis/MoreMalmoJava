@@ -10,6 +10,10 @@ public class GridVisualizer extends JFrame {
     private GridVisualizerPanel gridVisualizerPanel;
 
     public GridVisualizer() throws HeadlessException {
+        this(false);
+    }
+
+    public GridVisualizer(boolean isVisible) throws HeadlessException {
         setTitle("GridVisualizer");
         setSize(800, 605);
         setResizable(false);
@@ -24,9 +28,10 @@ public class GridVisualizer extends JFrame {
         gridVisualizerPanel = new GridVisualizerPanel();
         add(gridVisualizerPanel);
 
+        setVisible(isVisible);
     }
 
-    public void updateGrid(String[][][] grid) {
+    public synchronized void updateGrid(String[][][] grid) {
         this.gridVisualizerPanel.setGrid(grid);
         this.repaint();
     }

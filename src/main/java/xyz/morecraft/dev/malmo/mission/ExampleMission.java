@@ -1,6 +1,9 @@
 package xyz.morecraft.dev.malmo.mission;
 
-import com.microsoft.msr.malmo.*;
+import com.microsoft.msr.malmo.AgentHost;
+import com.microsoft.msr.malmo.MissionRecordSpec;
+import com.microsoft.msr.malmo.MissionSpec;
+import com.microsoft.msr.malmo.StringVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.morecraft.dev.malmo.proto.Mission;
@@ -13,33 +16,33 @@ public class ExampleMission extends Mission {
         super(argv);
     }
 
-    @Override
-    protected WorldState step() {
-        getAgentHost().sendCommand("move 1");
-        getAgentHost().sendCommand("turn " + Math.random());
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException ex) {
-            log.error("User interrupted while mission was running.");
-            return null;
-        }
-        final WorldState worldState = getAgentHost().getWorldState();
-        log.info(
-                "received: video={}, observations={}, rewards={}",
-                worldState.getNumberOfVideoFramesSinceLastState(),
-                worldState.getNumberOfObservationsSinceLastState(),
-                worldState.getNumberOfRewardsSinceLastState()
-        );
-        for (int i = 0; i < worldState.getRewards().size(); i++) {
-            TimestampedReward reward = worldState.getRewards().get(i);
-            log.info("Summed reward: " + reward.getValue());
-        }
-        for (int i = 0; i < worldState.getErrors().size(); i++) {
-            TimestampedString error = worldState.getErrors().get(i);
-            log.info("Error: " + error.getText());
-        }
-        return worldState;
-    }
+//    @Override
+//    protected WorldState step() {
+//        getAgentHost().sendCommand("move 1");
+//        getAgentHost().sendCommand("turn " + Math.random());
+//        try {
+//            Thread.sleep(500);
+//        } catch (InterruptedException ex) {
+//            log.error("User interrupted while mission was running.");
+//            return null;
+//        }
+//        final WorldState worldState = getAgentHost().getWorldState();
+//        log.info(
+//                "received: video={}, observations={}, rewards={}",
+//                worldState.getNumberOfVideoFramesSinceLastState(),
+//                worldState.getNumberOfObservationsSinceLastState(),
+//                worldState.getNumberOfRewardsSinceLastState()
+//        );
+//        for (int i = 0; i < worldState.getRewards().size(); i++) {
+//            TimestampedReward reward = worldState.getRewards().get(i);
+//            log.info("Summed reward: " + reward.getValue());
+//        }
+//        for (int i = 0; i < worldState.getErrors().size(); i++) {
+//            TimestampedString error = worldState.getErrors().get(i);
+//            log.info("Error: " + error.getText());
+//        }
+//        return worldState;
+//    }
 
     @Override
     protected AgentHost initAgentHost() {

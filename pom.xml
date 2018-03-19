@@ -13,7 +13,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <startClass>xyz.morecraft.dev.malmo.Main</startClass>
+        <startClass>xyz.morecraft.dev.malmo.main.Lava1MissionMain</startClass>
         <nd4j.version>0.9.1</nd4j.version>
     </properties>
 

@@ -3,11 +3,14 @@ package xyz.morecraft.dev.malmo.util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.msr.malmo.TimestampedString;
+import com.microsoft.msr.malmo.TimestampedStringVector;
+import com.microsoft.msr.malmo.WorldState;
 import lombok.Getter;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 public class WorldObservation {
@@ -23,6 +26,89 @@ public class WorldObservation {
         this.v = v;
         this.map = objectMapper.readValue(v.getText(), new TypeReference<TreeMap<String, Object>>() {
         });
+    }
+
+    public static WorldObservation fromWorldState(WorldState worldState) throws IOException {
+        final TimestampedStringVector observations = worldState.getObservations();
+        for (int i = 0; i < observations.size(); i++) {
+            final TimestampedString o = observations.get(i);
+            if (Objects.nonNull(o)) {
+                return new WorldObservation(o);
+            }
+        }
+        return null;
+    }
+
+    public IntPoint3D getPos() {
+        return new IntPoint3D(
+                (float) map.get("XPos"),
+                (float) map.get("YPos"),
+                (float) map.get("ZPos")
+        );
+    }
+
+    public boolean isAlive() {
+        return (boolean) map.get("IsAlive");
+    }
+
+    public int getFood() {
+        return (int) map.get("Food");
+    }
+
+    public int getDamageDealt() {
+        return (int) map.get("DamageDealt");
+    }
+
+    public int getDamageTaken() {
+        return (int) map.get("DamageTaken");
+    }
+
+    public int getDistanceTravelled() {
+        return (int) map.get("DistanceTravelled");
+    }
+
+    public float getLife() {
+        return (float) map.get("Life");
+    }
+
+    public int getMobsKilled() {
+        return (int) map.get("MobsKilled");
+    }
+
+    public String getName() {
+        return (String) map.get("Name");
+    }
+
+    public float getPitch() {
+        return (float) map.get("Pitch");
+    }
+
+    public int getPlayersKilled() {
+        return (int) map.get("PlayersKilled");
+    }
+
+    public int getScore() {
+        return (int) map.get("Score");
+    }
+
+    public int getTimeAlive() {
+        return (int) map.get("TimeAlive");
+    }
+
+    public int getTotalTime() {
+        return (int) map.get("TotalTime");
+    }
+
+    public int getWorldTime() {
+        return (int) map.get("WorldTime");
+    }
+
+    public int getXP() {
+        return (int) map.get("XP");
+    }
+
+    public float getYaw() {
+        return (float) map.get("Yaw");
     }
 
     public String[] getGrid(String name, int x) {
