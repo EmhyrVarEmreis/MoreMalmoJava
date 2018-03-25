@@ -41,40 +41,10 @@ public class SimpleWalker implements MissionRunner<Lava1Mission> {
         final String[][][] rawRawGrid = worldObservation.getGrid(Lava1Mission.OBSERVE_GRID_0, Lava1Mission.OBSERVE_GRID_0_RADIUS, 1, Lava1Mission.OBSERVE_GRID_0_RADIUS);
         final String[][] rawGrid = WayUtils.revertGrid(rawRawGrid[0], Lava1Mission.OBSERVE_GRID_0_RADIUS);
 
-        final boolean[][] grid = toBooleanGrid(rawGrid, Lava1Mission.OBSERVE_GRID_0_RADIUS);
-
-        gridVisualizer.updateGrid(rawGrid);
-
         final IntPoint3D currentPoint = worldObservation.getPos();
         final IntPoint3D destinationPoint = mission.getP().getRight();
 
-        final double angle = WayUtils.getAngle(currentPoint.x, currentPoint.z, destinationPoint.x, destinationPoint.z);
-
-        /* DIRS
-         *
-         *      0
-         *  3       1
-         *      2
-         */
-        final int goalDirection = (Math.abs((int) Math.floor(angle / 90.0 + 0.5)) + 3) % 4;
-        final int[][] transform = new int[][]{
-                {0, 1},
-                {1, 2},
-                {2, 1},
-                {1, 0}
-        };
-
-        int goDirection = 0;
-        for (int i = 0; i < 4; i++) {
-            final int j = (i + goalDirection) % 4;
-            final int[] p = transform[j];
-            if (grid[p[0]][p[1]]) {
-                goDirection = j;
-                break;
-            }
-        }
-
-        switch (goDirection) {
+        switch (calculateNextStep(rawGrid, currentPoint, destinationPoint)) {
             case 0:
                 agentHost.sendCommand("move 0.5");
                 agentHost.sendCommand("strafe 0");
@@ -95,10 +65,50 @@ public class SimpleWalker implements MissionRunner<Lava1Mission> {
                 break;
         }
 
+        return worldState;
+    }
+
+    /**
+     * Directions:
+     * <pre>
+     *      0
+     *  3       1
+     *      2
+     * </pre>
+     *
+     * @param rawGrid          Raw 2d grid fetched from WorldObservation.
+     * @param currentPoint     Player location.
+     * @param destinationPoint Destination location.
+     * @return Calculated direction.
+     */
+    public int calculateNextStep(final String[][] rawGrid, final IntPoint3D currentPoint, final IntPoint3D destinationPoint) {
+        final boolean[][] grid = toBooleanGrid(rawGrid, Lava1Mission.OBSERVE_GRID_0_RADIUS);
+
+        gridVisualizer.updateGrid(rawGrid);
+
+        final double angle = WayUtils.getAngle(currentPoint.x, currentPoint.z, destinationPoint.x, destinationPoint.z);
+
+        final int goalDirection = (Math.abs((int) Math.floor(angle / 90.0 + 0.5)) + 3) % 4;
+        final int[][] transform = new int[][]{
+                {0, 1},
+                {1, 2},
+                {2, 1},
+                {1, 0}
+        };
+
+        int goDirection = 0;
+        for (int i = 0; i < 4; i++) {
+            final int j = (i + goalDirection) % 4;
+            final int[] p = transform[j];
+            if (grid[p[0]][p[1]]) {
+                goDirection = j;
+                break;
+            }
+        }
+
         log.info("angle={}, goalDirection={}, goDirection={}, grid={}", (int) angle, goalDirection, goDirection, Arrays.deepToString(grid));
 
-
-        return worldState;
+        return goDirection;
     }
 
     private boolean[][] toBooleanGrid(final String[][] rawGrid, int r) {
