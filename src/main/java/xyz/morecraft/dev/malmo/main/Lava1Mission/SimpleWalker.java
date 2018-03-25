@@ -88,6 +88,8 @@ public class SimpleWalker implements MissionRunner<Lava1Mission> {
 
         final double angle = WayUtils.getAngle(currentPoint.x, currentPoint.z, destinationPoint.x, destinationPoint.z);
 
+        gridVisualizer.drawAngle(destinationPoint.z);
+
         final int goalDirection = (Math.abs((int) Math.floor(angle / 90.0 + 0.5)) + 3) % 4;
         final int[][] transform = new int[][]{
                 {0, 1},
@@ -105,6 +107,8 @@ public class SimpleWalker implements MissionRunner<Lava1Mission> {
                 break;
             }
         }
+
+        gridVisualizer.drawDir(goDirection);
 
         log.info("angle={}, goalDirection={}, goDirection={}, grid={}", (int) angle, goalDirection, goDirection, Arrays.deepToString(grid));
 

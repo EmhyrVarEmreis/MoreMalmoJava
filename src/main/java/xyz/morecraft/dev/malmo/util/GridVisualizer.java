@@ -47,14 +47,34 @@ public class GridVisualizer extends JFrame {
         }
     }
 
+    public void drawAngle(double angle) {
+        this.gridVisualizerPanel.setAngle(angle);
+        this.repaint();
+    }
+
+    public void drawDir(int goDirection) {
+        this.gridVisualizerPanel.setDir(goDirection);
+        this.repaint();
+    }
+
     private static class GridVisualizerPanel extends JPanel {
 
-        private String[][] grid;
         private static final Map<String, Color> colorMap;
 
-        public void setGrid(String[][] grid) {
+        private String[][] grid;
+        private double angle;
+        private int dir;
+
+        private void setGrid(String[][] grid) {
             this.grid = grid;
-            this.repaint();
+        }
+
+        private void setAngle(double angle) {
+            this.angle = angle;
+        }
+
+        private void setDir(int dir) {
+            this.dir = dir;
         }
 
         @Override
@@ -90,7 +110,18 @@ public class GridVisualizer extends JFrame {
             g2d.setColor(Color.GREEN);
 
             int ovalWidth = step / 5;
+            //noinspection SuspiciousNameCombination
             g2d.fillOval(margin + ((n / 2) * step) + ovalWidth * 2, margin + ((n / 2) * step) + ovalWidth * 2, ovalWidth, ovalWidth);
+
+            if (angle >= 0) {
+                angle = Math.toRadians(angle);
+                int angleStart = margin + dim / 2 - 3;
+                int angleWidth = (dim / 2) - margin;
+                int endX = (int) (angleStart + angleWidth * Math.sin(angle));
+                int endY = (int) (angleStart + angleWidth * Math.cos(angle));
+                g2d.setColor(Color.GREEN);
+                g2d.drawLine(angleStart, angleStart, endX, endY);
+            }
 
         }
 

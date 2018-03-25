@@ -1,5 +1,8 @@
 package xyz.morecraft.dev.malmo.util;
 
+import lombok.ToString;
+
+@ToString
 public class IntPoint3D {
 
     public Double x, y, z;
