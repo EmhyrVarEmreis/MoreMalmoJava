@@ -114,8 +114,11 @@ public class GridVisualizer extends JFrame {
             g2d.fillOval(margin + ((n / 2) * step) + ovalWidth * 2, margin + ((n / 2) * step) + ovalWidth * 2, ovalWidth, ovalWidth);
 
             if (angle >= 0) {
+                angle = Math.abs(360 - angle);
+                angle += 270;
+                angle = angle % 360;
                 angle = Math.toRadians(angle);
-                int angleStart = margin + dim / 2 - 3;
+                int angleStart = margin + dim / 2;
                 int angleWidth = (dim / 2) - margin;
                 int endX = (int) (angleStart + angleWidth * Math.sin(angle));
                 int endY = (int) (angleStart + angleWidth * Math.cos(angle));
