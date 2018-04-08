@@ -10,8 +10,15 @@ import xyz.morecraft.dev.malmo.util.WorldObservation;
 
 import java.util.Arrays;
 
+import static xyz.morecraft.dev.malmo.util.Constants.PLAYER_WIDTH;
+
 @Slf4j
 public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
+
+    @Override
+    public int stepInterval() {
+        return 100;
+    }
 
     @Override
     public int calculateNextStep(final WorldObservation worldObservation, Mission<?> mission) {
@@ -44,7 +51,7 @@ public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
 
         final double angle = WayUtils.getAngle(currentPoint.x, currentPoint.z, destinationPoint.x, destinationPoint.z);
 
-        gridVisualizer.drawAngle(destinationPoint.z);
+        gridVisualizer.drawAngle(angle);
 
         final int goalDirection = (Math.abs((int) Math.floor(angle / 90.0 + 0.5)) + 3) % 4;
         final int[][] transform = new int[][]{
@@ -64,11 +71,36 @@ public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
             }
         }
 
+        final int isTouchingEdges = isTouchingEdges(currentPoint);
+        if (goDirection == 0) {
+            if (isTouchingEdges != 0) {
+                goDirection = (isTouchingEdges == -1) ? 1 : 3;
+            }
+        }
+
         gridVisualizer.drawDir(goDirection);
 
-        log.info("angle={}, goalDirection={}, goDirection={}, grid={}", (int) angle, goalDirection, goDirection, Arrays.deepToString(grid));
+        log.info("angle={}, goalDirection={}, isTouchingEdges={} goDirection={}, grid={}", (int) angle, goalDirection, isTouchingEdges, goDirection, Arrays.deepToString(grid));
 
         return goDirection;
+    }
+
+    /**
+     * Checks if player in given location is touching edges
+     *
+     * @param currentPoint Current location
+     * @return -1 => touching left<br/>0 => no touching<br/>1 => touching right
+     */
+    private int isTouchingEdges(final IntPoint3D currentPoint) {
+        final double xx = Math.abs(currentPoint.x % 1);
+        final double tol = PLAYER_WIDTH / 2 * 1.1;
+        if ((1 - xx) <= tol) {
+            return -1;
+        } else if (xx <= tol) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
 }
