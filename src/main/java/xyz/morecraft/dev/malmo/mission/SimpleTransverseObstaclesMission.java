@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class Lava1Mission extends Mission<Lava1Mission.Record> {
+public class SimpleTransverseObstaclesMission extends Mission<SimpleTransverseObstaclesMission.Record> {
 
     public final static String OBSERVE_GRID_0 = "og0";
     public final static String OBSERVE_GRID_1 = "og1";
@@ -32,9 +32,9 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
     public final static double tol = 0.25f;
 
     @Getter
-    private Pair<IntPoint3D, IntPoint3D> p;
+    private Pair<IntPoint3D, IntPoint3D> startingPointWithDestinationPointPair;
 
-    public Lava1Mission(String[] argv) {
+    public SimpleTransverseObstaclesMission(String[] argv) {
         super(argv);
     }
 
@@ -44,22 +44,32 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
     }
 
     @Override
+    public IntPoint3D getStartingPoint() {
+        return startingPointWithDestinationPointPair.getLeft();
+    }
+
+    @Override
+    public IntPoint3D getDestinationPoint() {
+        return startingPointWithDestinationPointPair.getRight();
+    }
+
+    @Override
     protected MissionSpec initMissionSpec() {
         MissionSpec missionSpec = new MissionSpec();
         missionSpec.timeLimitInSeconds(600);
 
         TerrainGen.generator.setSeed(666);
-//        p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 150, 1, "lava", 0);
-        p = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 105, 50, 1, "dirt", 1);
-//        p = TerrainGen.maze(missionSpec, 21, 50);
+//        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 150, 1, "lava", 0);
+        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 105, 50, 1, "dirt", 1);
+//        startingPointWithDestinationPointPair = TerrainGen.maze(missionSpec, 21, 50);
 
         final int r0 = Math.floorDiv(OBSERVE_GRID_0_RADIUS, 2);
         final int r1 = Math.floorDiv(OBSERVE_GRID_1_RADIUS, 2);
         missionSpec.observeGrid(-r0, -1, -r0, r0, -1, r0, OBSERVE_GRID_0);
         missionSpec.observeGrid(-r1, -1, -r1, r1, -1, r1, OBSERVE_GRID_1);
         missionSpec.observeGrid(-OBSERVE_GRID_2_WIDTH, -1, 1, OBSERVE_GRID_2_WIDTH, -1, 1, OBSERVE_GRID_2);
-        missionSpec.observeDistance(p.getRight().fX() + 0.5f, p.getRight().fY() + 1, p.getRight().fZ() + 0.5f, OBSERVE_DISTANCE_1);
-        missionSpec.startAt(p.getLeft().fX(), p.getLeft().fY(), p.getLeft().fZ());
+        missionSpec.observeDistance(startingPointWithDestinationPointPair.getRight().fX() + 0.5f, startingPointWithDestinationPointPair.getRight().fY() + 1, startingPointWithDestinationPointPair.getRight().fZ() + 0.5f, OBSERVE_DISTANCE_1);
+        missionSpec.startAt(startingPointWithDestinationPointPair.getLeft().fX(), startingPointWithDestinationPointPair.getLeft().fY(), startingPointWithDestinationPointPair.getLeft().fZ());
         missionSpec.setTimeOfDay(12000, false);
 
         return missionSpec;
@@ -80,7 +90,7 @@ public class Lava1Mission extends Mission<Lava1Mission.Record> {
     protected InputOutputBundle getTrainingSetFromRecord(List<Record> recordList) {
         Set<Record> recordSet = recordList.stream().filter(record -> !record.getKeys().isEmpty()).distinct().collect(Collectors.toSet());
 
-        Map<String[][][], Map<Collection<String>, Integer>> map = new TreeMap<>(Lava1Mission::compareGrids);
+        Map<String[][][], Map<Collection<String>, Integer>> map = new TreeMap<>(SimpleTransverseObstaclesMission::compareGrids);
 
         for (Record record : recordSet) {
             final String[][][] grid = record.getGrid();

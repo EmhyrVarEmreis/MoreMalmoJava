@@ -1,6 +1,6 @@
 package test;
 
-import xyz.morecraft.dev.malmo.mission.Lava1Mission;
+import xyz.morecraft.dev.malmo.mission.SimpleTransverseObstaclesMission;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
 public class Test {
 
     public static void main(String[] args) {
-        List<Lava1Mission.Record> recordList = new ArrayList<>();
+        List<SimpleTransverseObstaclesMission.Record> recordList = new ArrayList<>();
         List<String> stringList = new ArrayList<>();
         stringList.add("lava");
         stringList.add("stone");
@@ -37,7 +37,7 @@ public class Test {
             }
         }
         for (String[][] possibility : possibilities) {
-            recordList.add(new Lava1Mission.Record(
+            recordList.add(new SimpleTransverseObstaclesMission.Record(
                     null,
                     new String[][][]{possibility}
             ));

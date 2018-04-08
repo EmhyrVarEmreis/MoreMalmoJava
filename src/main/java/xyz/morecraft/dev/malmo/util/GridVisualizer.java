@@ -5,7 +5,7 @@ import java.awt.*;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static xyz.morecraft.dev.malmo.util.BlockNames.*;
+import static xyz.morecraft.dev.malmo.util.Blocks.*;
 
 public class GridVisualizer extends JFrame {
 

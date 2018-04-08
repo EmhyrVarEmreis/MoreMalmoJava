@@ -1,10 +1,10 @@
-package xyz.morecraft.dev.malmo.main.Lava1Mission;
+package xyz.morecraft.dev.malmo.main.simpleTransverseObstacles;
 
 import com.google.gson.GsonBuilder;
 import com.microsoft.msr.malmo.AgentHost;
 import com.microsoft.msr.malmo.WorldState;
 import lombok.extern.slf4j.Slf4j;
-import xyz.morecraft.dev.malmo.mission.Lava1Mission;
+import xyz.morecraft.dev.malmo.mission.SimpleTransverseObstaclesMission;
 import xyz.morecraft.dev.malmo.proto.MissionRunner;
 import xyz.morecraft.dev.malmo.util.WorldObservation;
 import xyz.morecraft.dev.neural.mlp.neural.SimpleLayeredNeuralNetwork;
@@ -13,7 +13,7 @@ import java.io.FileReader;
 import java.util.Objects;
 
 @Slf4j
-public class SimpleNeural implements MissionRunner<Lava1Mission> {
+public class SimpleNeural implements MissionRunner<SimpleTransverseObstaclesMission> {
 
     private SimpleLayeredNeuralNetwork network;
 
@@ -23,7 +23,7 @@ public class SimpleNeural implements MissionRunner<Lava1Mission> {
     }
 
     @Override
-    public WorldState step(AgentHost agentHost, Lava1Mission mission) throws Exception {
+    public WorldState step(AgentHost agentHost, SimpleTransverseObstaclesMission mission) throws Exception {
         final WorldState worldState = agentHost.peekWorldState();
         final WorldObservation worldObservation = WorldObservation.fromWorldState(worldState);
 
@@ -35,7 +35,7 @@ public class SimpleNeural implements MissionRunner<Lava1Mission> {
             network = new GsonBuilder().create().fromJson(new FileReader("tmp/0.3406.9.network.json"), SimpleLayeredNeuralNetwork.class);
         }
         Thread.sleep(50);
-        double[] output = network.thinkOutput(new double[][]{Lava1Mission.normalizeGrid(worldObservation.getGrid(Lava1Mission.OBSERVE_GRID_1, Lava1Mission.OBSERVE_GRID_1_RADIUS, 1, Lava1Mission.OBSERVE_GRID_1_RADIUS))})[0];
+        double[] output = network.thinkOutput(new double[][]{SimpleTransverseObstaclesMission.normalizeGrid(worldObservation.getGrid(SimpleTransverseObstaclesMission.OBSERVE_GRID_1, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS, 1, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS))})[0];
 
         int max = 0;
         for (int j = 0; j < output.length; j++) {

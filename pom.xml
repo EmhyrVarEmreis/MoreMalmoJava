@@ -13,7 +13,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <startClass>xyz.morecraft.dev.malmo.main.Lava1MissionMain</startClass>
+        <startClass>xyz.morecraft.dev.malmo.mission.main.SimpleTransverseObstaclesMissionMain</startClass>
         <nd4j.version>0.9.1</nd4j.version>
     </properties>
 
@@ -96,9 +96,9 @@
         </dependency>
 
         <!--<dependency>-->
-            <!--<groupId>org.nd4j</groupId>-->
-            <!--<artifactId>nd4j-cuda-8.0</artifactId>-->
-            <!--<version>${nd4j.version}</version>-->
+        <!--<groupId>org.nd4j</groupId>-->
+        <!--<artifactId>nd4j-cuda-8.0</artifactId>-->
+        <!--<version>${nd4j.version}</version>-->
         <!--</dependency>-->
 
         <dependency>

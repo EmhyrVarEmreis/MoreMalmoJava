@@ -1,30 +1,30 @@
-package xyz.morecraft.dev.malmo.main;
+package xyz.morecraft.dev.malmo.main.walker;
 
 import lombok.extern.slf4j.Slf4j;
-import xyz.morecraft.dev.malmo.main.Lava1Mission.SimpleWalker;
+import xyz.morecraft.dev.malmo.main.walker.impl.SimpleWalkerV1;
 import xyz.morecraft.dev.malmo.util.IntPoint3D;
 
-import static xyz.morecraft.dev.malmo.util.BlockNames.BLOCK_DIRT;
-import static xyz.morecraft.dev.malmo.util.BlockNames.BLOCK_STONE;
+import static xyz.morecraft.dev.malmo.util.Blocks.BLOCK_DIRT;
+import static xyz.morecraft.dev.malmo.util.Blocks.BLOCK_STONE;
 
 @Slf4j
 public class WalkerPlayground {
 
     public static void main(String[] args) throws InterruptedException {
 
-        SimpleWalker simpleWalker = new SimpleWalker();
+        SimpleWalkerV1 simpleWalker = new SimpleWalkerV1();
 
         int i = 0;
 
         while (!Thread.currentThread().isInterrupted()) {
 
-            test(simpleWalker, i++);
+            test(simpleWalker);
 
         }
 
     }
 
-    private static void test(SimpleWalker simpleWalker, int xxx) throws InterruptedException {
+    private static void test(SimpleWalkerV1 simpleWalker) throws InterruptedException {
 
         final String[][] rawGrid = new String[][]{
                 {BLOCK_DIRT, BLOCK_DIRT, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE},

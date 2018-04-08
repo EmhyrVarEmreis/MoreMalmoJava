@@ -1,4 +1,4 @@
-package xyz.morecraft.dev.malmo.main.Lava1Mission;
+package xyz.morecraft.dev.malmo.main.simpleTransverseObstacles;
 
 import com.google.gson.GsonBuilder;
 import com.microsoft.msr.malmo.AgentHost;
@@ -20,7 +20,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.impl.indexaccum.IAMax;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
-import xyz.morecraft.dev.malmo.mission.Lava1Mission;
+import xyz.morecraft.dev.malmo.mission.SimpleTransverseObstaclesMission;
 import xyz.morecraft.dev.malmo.proto.MissionRunner;
 import xyz.morecraft.dev.malmo.util.GridVisualizer;
 import xyz.morecraft.dev.malmo.util.WayUtils;
@@ -31,10 +31,10 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static xyz.morecraft.dev.malmo.util.BlockNames.BLOCK_STONE;
+import static xyz.morecraft.dev.malmo.util.Blocks.BLOCK_STONE;
 
 @Slf4j
-public class Neural implements MissionRunner<Lava1Mission> {
+public class Neural implements MissionRunner<SimpleTransverseObstaclesMission> {
 
     private final static String multiLayerNetworkPath = "record/multiLayerNetwork.model";
     private GridVisualizer gridVisualizer = new GridVisualizer(true, false);
@@ -55,7 +55,7 @@ public class Neural implements MissionRunner<Lava1Mission> {
                 .list()
                 .layer(layerNum++,
                         new DenseLayer.Builder()
-                                .nIn(Lava1Mission.OBSERVE_GRID_1_RADIUS * Lava1Mission.OBSERVE_GRID_1_RADIUS)
+                                .nIn(SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS * SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS)
                                 .nOut(50)
                                 .activation(Activation.SOFTMAX)
                                 .weightInit(WeightInit.DISTRIBUTION)
@@ -95,22 +95,22 @@ public class Neural implements MissionRunner<Lava1Mission> {
 
         multiLayerNetwork = new MultiLayerNetwork(conf);
 
-        final Lava1Mission.Record[] rawRecords = new GsonBuilder().create().fromJson(new FileReader("record/last.json"), Lava1Mission.Record[].class);
+        final SimpleTransverseObstaclesMission.Record[] rawRecords = new GsonBuilder().create().fromJson(new FileReader("record/last.json"), SimpleTransverseObstaclesMission.Record[].class);
 
-        final List<Lava1Mission.Record> recordsAll = Arrays.stream(rawRecords)
+        final List<SimpleTransverseObstaclesMission.Record> recordsAll = Arrays.stream(rawRecords)
                 .filter(record -> !record.getKeys().isEmpty())
                 .filter(record -> record.getKeys().size() == 1)
                 .collect(Collectors.toList());
 
-        final Set<Lava1Mission.Record> treeSet = new TreeSet<>((o11, o22) -> Lava1Mission.compareGrids(o11.getGrid(), o22.getGrid()));
+        final Set<SimpleTransverseObstaclesMission.Record> treeSet = new TreeSet<>((o11, o22) -> SimpleTransverseObstaclesMission.compareGrids(o11.getGrid(), o22.getGrid()));
         treeSet.addAll(recordsAll);
-        final Lava1Mission.Record[] records = treeSet.toArray(new Lava1Mission.Record[treeSet.size()]);
+        final SimpleTransverseObstaclesMission.Record[] records = treeSet.toArray(new SimpleTransverseObstaclesMission.Record[0]);
 
-        INDArray input = Nd4j.zeros(records.length, Lava1Mission.OBSERVE_GRID_1_RADIUS * Lava1Mission.OBSERVE_GRID_1_RADIUS);
+        INDArray input = Nd4j.zeros(records.length, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS * SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS);
         INDArray output = Nd4j.zeros(records.length, 3);
 
         for (int i = 0; i < records.length; i++) {
-            final Lava1Mission.Record record = records[i];
+            final SimpleTransverseObstaclesMission.Record record = records[i];
             int j = 0;
             for (String[][] strings : record.getGrid()) {
                 for (String[] string : strings) {
@@ -149,7 +149,7 @@ public class Neural implements MissionRunner<Lava1Mission> {
     }
 
     @Override
-    public WorldState step(AgentHost agentHost, Lava1Mission mission) throws Exception {
+    public WorldState step(AgentHost agentHost, SimpleTransverseObstaclesMission mission) throws Exception {
         final WorldState worldState = agentHost.peekWorldState();
         final WorldObservation worldObservation = WorldObservation.fromWorldState(worldState);
 
@@ -157,18 +157,18 @@ public class Neural implements MissionRunner<Lava1Mission> {
             return worldState;
         }
 
-        final String[][][] rawGrid = worldObservation.getGrid(Lava1Mission.OBSERVE_GRID_1, Lava1Mission.OBSERVE_GRID_1_RADIUS, 1, Lava1Mission.OBSERVE_GRID_1_RADIUS);
-        final String[] lineGrid = worldObservation.getGrid(Lava1Mission.OBSERVE_GRID_2, Lava1Mission.OBSERVE_GRID_2_WIDTH * 2 + 1);
-        final double[] grid = Lava1Mission.normalizeGrid(rawGrid);
+        final String[][][] rawGrid = worldObservation.getGrid(SimpleTransverseObstaclesMission.OBSERVE_GRID_1, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS, 1, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS);
+        final String[] lineGrid = worldObservation.getGrid(SimpleTransverseObstaclesMission.OBSERVE_GRID_2, SimpleTransverseObstaclesMission.OBSERVE_GRID_2_WIDTH * 2 + 1);
+        final double[] grid = SimpleTransverseObstaclesMission.normalizeGrid(rawGrid);
 
-        final INDArray input = Nd4j.zeros(Lava1Mission.OBSERVE_GRID_1_RADIUS * Lava1Mission.OBSERVE_GRID_1_RADIUS);
+        final INDArray input = Nd4j.zeros(SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS * SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS);
         for (int j = 0; j < grid.length; j++) {
             input.putScalar(j, grid[j] == 1 ? 1 : 0);
         }
 
-        gridVisualizer.updateGrid(WayUtils.revertGrid(rawGrid[0], Lava1Mission.OBSERVE_GRID_1_RADIUS));
+        gridVisualizer.updateGrid(WayUtils.revertGrid(rawGrid[0], SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS));
 
-        lastDistanceQueue.add(worldObservation.getDistance(Lava1Mission.OBSERVE_DISTANCE_1));
+        lastDistanceQueue.add(worldObservation.getDistance(SimpleTransverseObstaclesMission.OBSERVE_DISTANCE_1));
 
         final float tolerance = 0.25f;
         boolean areTheSame = lastDistanceQueue.size() > 15 && Math.abs(lastDistanceQueue.get(lastDistanceQueue.size() - 1) - lastDistanceQueue.get(lastDistanceQueue.size() - 6)) <= tolerance;

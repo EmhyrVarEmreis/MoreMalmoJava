@@ -6,6 +6,8 @@ import com.microsoft.msr.malmo.*;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import xyz.morecraft.dev.malmo.util.IntPoint3D;
 import xyz.morecraft.dev.neural.mlp.neural.InputOutputBundle;
 
 import java.io.FileReader;
@@ -36,6 +38,14 @@ public abstract class Mission<Record> {
         this.recordList = new LinkedList<>();
     }
 
+    public IntPoint3D getStartingPoint() {
+        throw new NotImplementedException();
+    }
+
+    public IntPoint3D getDestinationPoint() {
+        throw new NotImplementedException();
+    }
+
     protected abstract AgentHost initAgentHost();
 
     protected abstract MissionSpec initMissionSpec();
@@ -55,6 +65,22 @@ public abstract class Mission<Record> {
     }
 
     public <T extends Mission<Record>> void run(MissionRunner<T> missionRunner) throws Exception {
+        @SuppressWarnings("unchecked") final T thiss = (T) this;
+        run(agentHost -> {
+            Thread.sleep(missionRunner.stepInterval());
+            return missionRunner.step(agentHost, thiss);
+        });
+    }
+
+//    public <T extends Mission<Record>> void run(UniversalMissionRunner missionRunner) throws Exception {
+//        final Mission mission = this;
+//        run(agentHost -> {
+//            Thread.sleep(missionRunner.stepInterval());
+//            return missionRunner.step(agentHost, mission);
+//        });
+//    }
+
+    private <T extends Mission<Record>> void run(MissionRunnerWrapper missionRunnerWrapper) throws Exception {
         log.info("Waiting for the mission to start");
 
         agentHost = initAgentHost();
@@ -88,9 +114,7 @@ public abstract class Mission<Record> {
         } while (!worldState.getIsMissionRunning());
 
         do {
-            Thread.sleep(missionRunner.stepInterval());
-            //noinspection unchecked
-            worldState = missionRunner.step(agentHost, (T) this);
+            worldState = missionRunnerWrapper.go(agentHost);
         } while (worldState.getIsMissionRunning());
 
         if (recordList.size() > 0) {
@@ -112,6 +136,10 @@ public abstract class Mission<Record> {
 
         log.info("Mission has stopped.");
         System.exit(0);
+    }
+
+    private static interface MissionRunnerWrapper {
+        WorldState go(AgentHost agentHost) throws Exception;
     }
 
 }
