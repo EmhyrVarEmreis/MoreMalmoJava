@@ -92,6 +92,7 @@ public class GridVisualizer extends JFrame {
             final int dim = maxDim * 9 / 10;
             final int margin = (maxDim - dim) / 2;
             final int step = dim / n;
+            final int middle = margin + dim / 2;
 
             g2d.setStroke(new BasicStroke(3));
 
@@ -109,6 +110,12 @@ public class GridVisualizer extends JFrame {
 
             g2d.setColor(Color.GREEN);
 
+            final int dirStep = step / 3;
+            g2d.drawString("0", middle, middle - dirStep + 3);
+            g2d.drawString("1", middle + dirStep, middle);
+            g2d.drawString("2", middle, middle + dirStep + 3);
+            g2d.drawString("3", middle - dirStep, middle);
+
             int ovalWidth = step / 5;
             //noinspection SuspiciousNameCombination
             g2d.fillOval(margin + ((n / 2) * step) + ovalWidth * 2, margin + ((n / 2) * step) + ovalWidth * 2, ovalWidth, ovalWidth);
@@ -118,12 +125,11 @@ public class GridVisualizer extends JFrame {
                 angle += 270;
                 angle = angle % 360;
                 angle = Math.toRadians(angle);
-                int angleStart = margin + dim / 2;
                 int angleWidth = (dim / 2) - margin;
-                int endX = (int) (angleStart + angleWidth * Math.sin(angle));
-                int endY = (int) (angleStart + angleWidth * Math.cos(angle));
+                int endX = (int) (middle + angleWidth * Math.sin(angle));
+                int endY = (int) (middle + angleWidth * Math.cos(angle));
                 g2d.setColor(Color.GREEN);
-                g2d.drawLine(angleStart, angleStart, endX, endY);
+                g2d.drawLine(middle, middle, endX, endY);
             }
 
         }

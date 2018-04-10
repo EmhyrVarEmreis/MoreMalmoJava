@@ -14,8 +14,6 @@ public class WalkerPlayground {
 
         SimpleWalkerV1 simpleWalker = new SimpleWalkerV1();
 
-        int i = 0;
-
         while (!Thread.currentThread().isInterrupted()) {
 
             test(simpleWalker);

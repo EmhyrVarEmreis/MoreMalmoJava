@@ -17,7 +17,7 @@ public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
 
     @Override
     public int stepInterval() {
-        return 100;
+        return 200;
     }
 
     @Override
@@ -71,16 +71,18 @@ public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
             }
         }
 
-        final int isTouchingEdges = isTouchingEdges(currentPoint);
+        final int originalGoDirection = goDirection;
+        final int touchedEdge = isTouchingEdges(currentPoint);
+        final boolean isTouchingEdge = touchedEdge != 0;
         if (goDirection == 0) {
-            if (isTouchingEdges != 0) {
-                goDirection = (isTouchingEdges == -1) ? 1 : 3;
+            if (touchedEdge != 0) {
+                goDirection = (touchedEdge == -1) ? 1 : 3;
             }
         }
 
         gridVisualizer.drawDir(goDirection);
 
-        log.info("angle={}, goalDirection={}, isTouchingEdges={} goDirection={}, grid={}", (int) angle, goalDirection, isTouchingEdges, goDirection, Arrays.deepToString(grid));
+        log.info("angle={}, goalDirection={}, isTouchingEdge={} touchedEdge={}, goDirection={}, originalGoDirection={}, grid={}", (int) angle, goalDirection, isTouchingEdge, touchedEdge, goDirection, originalGoDirection, Arrays.deepToString(grid));
 
         return goDirection;
     }
