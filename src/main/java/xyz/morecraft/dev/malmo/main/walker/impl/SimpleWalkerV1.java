@@ -1,5 +1,8 @@
 package xyz.morecraft.dev.malmo.main.walker.impl;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import xyz.morecraft.dev.malmo.main.walker.SimpleWalker;
 import xyz.morecraft.dev.malmo.mission.SimpleTransverseObstaclesMission;
@@ -9,8 +12,6 @@ import xyz.morecraft.dev.malmo.util.WayUtils;
 import xyz.morecraft.dev.malmo.util.WorldObservation;
 
 import java.util.Arrays;
-
-import static xyz.morecraft.dev.malmo.util.Constants.PLAYER_WIDTH;
 
 @Slf4j
 public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
@@ -61,48 +62,61 @@ public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
                 {1, 0}
         };
 
+        final SimpleWalkerV1Data data = SimpleWalkerV1Data.builder()
+                .currentPoint(currentPoint)
+                .angle(angle)
+                .goalDirection(goalDirection)
+                .grid(grid)
+                .transform(transform)
+                .build();
+
+        calculateGoDirection(data);
+
+        gridVisualizer.drawDir(data.goDirection);
+
+        log(data);
+
+        return data.goDirection;
+    }
+
+    protected void calculateGoDirection(final SimpleWalkerV1Data data) {
+        calculateSimpleGoDirection(data);
+    }
+
+    protected void calculateSimpleGoDirection(final SimpleWalkerV1Data data) {
         int goDirection = 0;
         for (int i = 0; i < 4; i++) {
-            final int j = (i + goalDirection) % 4;
-            final int[] p = transform[j];
-            if (grid[p[0]][p[1]]) {
+            final int j = (i + data.goalDirection) % 4;
+            final int[] p = data.transform[j];
+            if (data.grid[p[0]][p[1]]) {
                 goDirection = j;
                 break;
             }
         }
-
-        final int originalGoDirection = goDirection;
-        final int touchedEdge = isTouchingEdges(currentPoint);
-        final boolean isTouchingEdge = touchedEdge != 0;
-        if (goDirection == 0) {
-            if (touchedEdge != 0) {
-                goDirection = (touchedEdge == -1) ? 1 : 3;
-            }
-        }
-
-        gridVisualizer.drawDir(goDirection);
-
-        log.info("angle={}, goalDirection={}, isTouchingEdge={} touchedEdge={}, goDirection={}, originalGoDirection={}, grid={}", (int) angle, goalDirection, isTouchingEdge, touchedEdge, goDirection, originalGoDirection, Arrays.deepToString(grid));
-
-        return goDirection;
+        data.goDirection = goDirection;
     }
 
-    /**
-     * Checks if player in given location is touching edges
-     *
-     * @param currentPoint Current location
-     * @return -1 => touching left<br/>0 => no touching<br/>1 => touching right
-     */
-    private int isTouchingEdges(final IntPoint3D currentPoint) {
-        final double xx = Math.abs(currentPoint.x % 1);
-        final double tol = PLAYER_WIDTH / 2 * 1.1;
-        if ((1 - xx) <= tol) {
-            return -1;
-        } else if (xx <= tol) {
-            return 1;
-        } else {
-            return 0;
-        }
+    protected void log(final SimpleWalkerV1Data data) {
+        log.info("angle={}, goalDirection={}, isTouchingEdge={} touchedEdge={}, goDirection={}, originalGoDirection={}, grid={}", (int) data.angle, data.goalDirection, data.isTouchingEdge, data.touchedEdge, data.goDirection, data.originalGoDirection, Arrays.deepToString(data.grid));
+    }
+
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    protected static class SimpleWalkerV1Data {
+        protected IntPoint3D currentPoint;
+        protected double angle;
+        protected int[][] transform;
+        protected boolean[][] grid;
+        protected int goDirection;
+        protected int goalDirection;
+        // V2
+        protected int originalGoDirection;
+        protected int touchedEdge;
+        protected boolean isTouchingEdge;
+        // V3
+        protected IntPoint3D lastPosition;
+        protected int lastGoDirection;
     }
 
 }

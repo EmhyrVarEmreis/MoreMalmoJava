@@ -20,4 +20,18 @@ public class WayUtils {
         return angle;
     }
 
+    public static int getOppositeSimpleDimension(final int dim) {
+        if (dim == 0) {
+            return 2;
+        } else if (dim == 1) {
+            return 3;
+        } else if (dim == 2) {
+            return 0;
+        } else if (dim == 3) {
+            return 1;
+        } else {
+            return dim;
+        }
+    }
+
 }

@@ -5,6 +5,8 @@ import xyz.morecraft.dev.malmo.main.simpleTransverseObstacles.Neural;
 import xyz.morecraft.dev.malmo.main.simpleTransverseObstacles.Recorder;
 import xyz.morecraft.dev.malmo.main.simpleTransverseObstacles.SimpleNeural;
 import xyz.morecraft.dev.malmo.main.walker.impl.SimpleWalkerV1;
+import xyz.morecraft.dev.malmo.main.walker.impl.SimpleWalkerV2;
+import xyz.morecraft.dev.malmo.main.walker.impl.SimpleWalkerV3;
 import xyz.morecraft.dev.malmo.mission.SimpleTransverseObstaclesMission;
 import xyz.morecraft.dev.malmo.proto.MissionRunner;
 import xyz.morecraft.dev.malmo.util.Util;
@@ -34,8 +36,10 @@ public class SimpleTransverseObstaclesMissionMain {
         });
         map.put(2, SimpleNeural::new);
         map.put(3, SimpleWalkerV1::new);
+        map.put(4, SimpleWalkerV2::new);
+        map.put(5, SimpleWalkerV3::new);
 
-        new SimpleTransverseObstaclesMission(args).run(map.get(3).get());
+        new SimpleTransverseObstaclesMission(args).run(map.get(5).get());
     }
 
 }

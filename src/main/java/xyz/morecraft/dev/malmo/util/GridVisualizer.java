@@ -19,9 +19,11 @@ public class GridVisualizer extends JFrame {
         setTitle("GridVisualizer");
         setSize(300, 300);
         setResizable(false);
-        setLocationRelativeTo(null);
         setLayout(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setLocation(screenSize.width - getWidth() - 64, 128);
 
         setUILookAndFeel();
 
@@ -33,6 +35,19 @@ public class GridVisualizer extends JFrame {
         setAlwaysOnTop(alwaysOnTop);
         setVisible(isVisible);
     }
+
+//    private Dimension moveToLastDisplay() {
+//        setVisible(false);
+//        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+//        GraphicsDevice[] screens = ge.getScreenDevices();
+//        GraphicsDevice screen = screens[screens.length - 1];
+//        JFrame dummy = new JFrame(screen.getDefaultConfiguration());
+//        setLocationRelativeTo(dummy);
+//        dummy.dispose();
+//        setVisible(true);
+//        final Rectangle bounds = screen.getDefaultConfiguration().getBounds();
+//        return new Dimension(bounds.width + screens[0].getDefaultConfiguration().getBounds().width, bounds.height);
+//    }
 
     public synchronized void updateGrid(String[][] grid) {
         this.gridVisualizerPanel.setGrid(grid);
@@ -111,10 +126,10 @@ public class GridVisualizer extends JFrame {
             g2d.setColor(Color.GREEN);
 
             final int dirStep = step / 3;
-            g2d.drawString("0", middle, middle - dirStep + 3);
-            g2d.drawString("1", middle + dirStep, middle);
-            g2d.drawString("2", middle, middle + dirStep + 3);
-            g2d.drawString("3", middle - dirStep, middle);
+            g2d.drawString("0", middle - 2, middle - dirStep + 3);
+            g2d.drawString("1", middle + dirStep - 2, middle + 2);
+            g2d.drawString("2", middle - 2, middle + dirStep + 3);
+            g2d.drawString("3", middle - dirStep - 2, middle + 2);
 
             int ovalWidth = step / 5;
             //noinspection SuspiciousNameCombination
@@ -136,6 +151,7 @@ public class GridVisualizer extends JFrame {
 
         static {
             colorMap = new TreeMap<>(String::compareToIgnoreCase);
+            colorMap.put(BLOCK_AIR, Color.LIGHT_GRAY);
             colorMap.put(BLOCK_STONE, Color.GRAY);
             colorMap.put(BLOCK_GLOWSTONE, Color.YELLOW);
             colorMap.put(BLOCK_GRASS, new Color(0, 100, 0));

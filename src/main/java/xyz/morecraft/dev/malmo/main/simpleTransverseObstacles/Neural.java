@@ -149,10 +149,7 @@ public class Neural implements MissionRunner<SimpleTransverseObstaclesMission> {
     }
 
     @Override
-    public WorldState step(AgentHost agentHost, SimpleTransverseObstaclesMission mission) throws Exception {
-        final WorldState worldState = agentHost.peekWorldState();
-        final WorldObservation worldObservation = WorldObservation.fromWorldState(worldState);
-
+    public WorldState step(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation, SimpleTransverseObstaclesMission mission) {
         if (Objects.isNull(worldObservation)) {
             return worldState;
         }

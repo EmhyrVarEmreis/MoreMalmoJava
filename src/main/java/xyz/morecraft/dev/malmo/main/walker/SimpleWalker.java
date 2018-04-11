@@ -20,10 +20,7 @@ public abstract class SimpleWalker<T extends Mission<?>> implements MissionRunne
     }
 
     @Override
-    public WorldState step(AgentHost agentHost, T mission) throws Exception {
-        final WorldState worldState = agentHost.peekWorldState();
-        final WorldObservation worldObservation = WorldObservation.fromWorldState(worldState);
-
+    public WorldState step(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation, T mission) throws Exception {
         if (Objects.isNull(worldObservation)) {
             return worldState;
         }

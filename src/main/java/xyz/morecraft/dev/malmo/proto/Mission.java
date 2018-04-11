@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import xyz.morecraft.dev.malmo.util.IntPoint3D;
+import xyz.morecraft.dev.malmo.util.WorldObservation;
 import xyz.morecraft.dev.neural.mlp.neural.InputOutputBundle;
 
 import java.io.FileReader;
@@ -52,6 +53,8 @@ public abstract class Mission<Record> {
 
     protected abstract MissionRecordSpec initMissionRecordSpec();
 
+    protected abstract void isGoalAcquired(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation) throws GoalReachedException;
+
     protected InputOutputBundle getTrainingSetFromRecord(List<Record> recordList) {
         throw new UnsupportedOperationException();
     }
@@ -66,9 +69,9 @@ public abstract class Mission<Record> {
 
     public <T extends Mission<Record>> void run(MissionRunner<T> missionRunner) throws Exception {
         @SuppressWarnings("unchecked") final T thiss = (T) this;
-        run(agentHost -> {
+        run((agentHost, worldState, worldObservation) -> {
             Thread.sleep(missionRunner.stepInterval());
-            return missionRunner.step(agentHost, thiss);
+            return missionRunner.step(agentHost, worldState, worldObservation, thiss);
         });
     }
 
@@ -113,9 +116,18 @@ public abstract class Mission<Record> {
             }
         } while (!worldState.getIsMissionRunning());
 
+        boolean isEnd = false;
         do {
-            worldState = missionRunnerWrapper.go(agentHost);
-        } while (worldState.getIsMissionRunning());
+            try {
+                worldState = agentHost.peekWorldState();
+                final WorldObservation worldObservation = WorldObservation.fromWorldState(worldState);
+                isGoalAcquired(agentHost, worldState, worldObservation);
+                worldState = missionRunnerWrapper.go(agentHost, worldState, worldObservation);
+            } catch (GoalReachedException e) {
+                log.info("Goal acquired! message=[{}]", e.getMessage());
+                isEnd = true;
+            }
+        } while (worldState.getIsMissionRunning() && !isEnd);
 
         if (recordList.size() > 0) {
             final String lastJson = "record/last.json";
@@ -139,7 +151,7 @@ public abstract class Mission<Record> {
     }
 
     private static interface MissionRunnerWrapper {
-        WorldState go(AgentHost agentHost) throws Exception;
+        WorldState go(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation) throws Exception;
     }
 
 }

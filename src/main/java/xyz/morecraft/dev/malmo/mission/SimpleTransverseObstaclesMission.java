@@ -4,15 +4,18 @@ import com.google.gson.reflect.TypeToken;
 import com.microsoft.msr.malmo.AgentHost;
 import com.microsoft.msr.malmo.MissionRecordSpec;
 import com.microsoft.msr.malmo.MissionSpec;
+import com.microsoft.msr.malmo.WorldState;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import xyz.morecraft.dev.malmo.proto.GoalReachedException;
 import xyz.morecraft.dev.malmo.proto.Mission;
 import xyz.morecraft.dev.malmo.util.IntPoint3D;
 import xyz.morecraft.dev.malmo.util.TerrainGen;
+import xyz.morecraft.dev.malmo.util.WorldObservation;
 import xyz.morecraft.dev.neural.mlp.neural.InputOutputBundle;
 
 import java.lang.reflect.Type;
@@ -54,13 +57,22 @@ public class SimpleTransverseObstaclesMission extends Mission<SimpleTransverseOb
     }
 
     @Override
+    protected void isGoalAcquired(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation) throws GoalReachedException {
+        if (Objects.nonNull(worldObservation)
+                && Objects.nonNull(startingPointWithDestinationPointPair)
+                && worldObservation.getPos().withY(0).floor().equals(startingPointWithDestinationPointPair.getRight().withY(0).floor())) {
+            throw new GoalReachedException("Destination point reached!");
+        }
+    }
+
+    @Override
     protected MissionSpec initMissionSpec() {
         MissionSpec missionSpec = new MissionSpec();
         missionSpec.timeLimitInSeconds(600);
 
         TerrainGen.generator.setSeed(777);
 //        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 150, 1, "lava", 0);
-        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 60, 40, 1, "dirt", 1);
+        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 45, 30, 1, "dirt", 1);
 //        startingPointWithDestinationPointPair = TerrainGen.maze(missionSpec, 21, 50);
 
         final int r0 = Math.floorDiv(OBSERVE_GRID_0_RADIUS, 2);
@@ -111,6 +123,7 @@ public class SimpleTransverseObstaclesMission extends Mission<SimpleTransverseOb
         }
 
         recordSet.clear();
+        //noinspection ConstantConditions
         map.forEach((strings, collectionIntegerMap) -> recordSet.add(new Record(
                 collectionIntegerMap.entrySet().stream().max(Comparator.comparing(Map.Entry::getValue)).get().getKey(),
                 strings

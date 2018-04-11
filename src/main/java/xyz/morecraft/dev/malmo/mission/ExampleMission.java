@@ -1,12 +1,11 @@
 package xyz.morecraft.dev.malmo.mission;
 
-import com.microsoft.msr.malmo.AgentHost;
-import com.microsoft.msr.malmo.MissionRecordSpec;
-import com.microsoft.msr.malmo.MissionSpec;
-import com.microsoft.msr.malmo.StringVector;
+import com.microsoft.msr.malmo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.morecraft.dev.malmo.proto.GoalReachedException;
 import xyz.morecraft.dev.malmo.proto.Mission;
+import xyz.morecraft.dev.malmo.util.WorldObservation;
 
 public class ExampleMission extends Mission {
 
@@ -83,6 +82,10 @@ public class ExampleMission extends Mission {
         missionRecordSpec.recordRewards();
         missionRecordSpec.recordObservations();
         return missionRecordSpec;
+    }
+
+    @Override
+    protected void isGoalAcquired(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation) throws GoalReachedException {
     }
 
 }
