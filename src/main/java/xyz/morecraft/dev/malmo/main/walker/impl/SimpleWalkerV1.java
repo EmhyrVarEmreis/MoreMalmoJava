@@ -85,11 +85,17 @@ public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
 
     protected void calculateSimpleGoDirection(final SimpleWalkerV1Data data) {
         int goDirection = 0;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 2; i++) {
             final int j = (i + data.goalDirection) % 4;
             final int[] p = data.transform[j];
             if (data.grid[p[0]][p[1]]) {
                 goDirection = j;
+                break;
+            }
+            final int jj = (3 - i + data.goalDirection) % 4;
+            final int[] pp = data.transform[jj];
+            if (data.grid[pp[0]][pp[1]]) {
+                goDirection = jj;
                 break;
             }
         }
@@ -97,7 +103,7 @@ public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
     }
 
     protected void log(final SimpleWalkerV1Data data) {
-        log.info("angle={}, goalDirection={}, isTouchingEdge={} touchedEdge={}, goDirection={}, originalGoDirection={}, grid={}", (int) data.angle, data.goalDirection, data.isTouchingEdge, data.touchedEdge, data.goDirection, data.originalGoDirection, Arrays.deepToString(data.grid));
+        log.info("angle={}, goalDirection={}, isTouchingEdge={}, touchedEdge={}, goDirection={}, originalGoDirection={}, grid={}", (int) data.angle, data.goalDirection, data.isTouchingEdge, data.touchedEdge, data.goDirection, data.originalGoDirection, Arrays.deepToString(data.grid));
     }
 
     @Builder

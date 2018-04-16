@@ -19,18 +19,17 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
     }
 
     protected void adjustDirectionOfTouchedEdges(final SimpleWalkerV1Data data) {
-        super.calculateGoDirection(data);
-
         final int originalGoDirection = data.goDirection;
-        final int touchedEdge = isTouchingEdges(originalGoDirection, data.currentPoint);
-        final boolean isTouchingEdge = touchedEdge != 0;
-        if (touchedEdge != -1) {
+        final int touchedEdge = isTouchingEdges(originalGoDirection, data.currentPoint, data.transform, data.grid);
+        final boolean isTouchingEdge = touchedEdge != -1;
+        if (isTouchingEdge) {
             data.goDirection = WayUtils.getOppositeSimpleDimension(touchedEdge);
         }
 
         data.originalGoDirection = originalGoDirection;
         data.isTouchingEdge = isTouchingEdge;
         data.touchedEdge = touchedEdge;
+        log.info("goDirection={}", data.goDirection);
     }
 
     /**
@@ -40,17 +39,23 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
      * @param currentPoint Current location
      * @return direction of touched edge or -1 if no edge is touched
      */
-    int isTouchingEdges(final int goDirection, final IntPoint3D currentPoint) {
-        if(goDirection == 0 || goDirection == 2) {
+    private int isTouchingEdges(final int goDirection, final IntPoint3D currentPoint, final int[][] transform, final boolean[][] grid) {
+        if ((goDirection == 0 || goDirection == 2) && canTouchEdge(goDirection, transform, grid)) {
             return isTouchingEdgesX(currentPoint);
-        } else if(goDirection == 3 || goDirection == 1) {
-            return isTouchingEdgesY(currentPoint);
+        } else if ((goDirection == 3 || goDirection == 1) && canTouchEdge(goDirection, transform, grid)) {
+            return isTouchingEdgesZ(currentPoint);
         } else {
             return -1;
         }
     }
 
-    int isTouchingEdgesX(final IntPoint3D currentPoint) {
+    private boolean canTouchEdge(final int goDirection, final int[][] transform, final boolean[][] grid) {
+        final int[] p1 = transform[(goDirection + 1) % 4];
+        final int[] p2 = transform[(goDirection + 3) % 4];
+        return !grid[p1[0]][p1[1]] || !grid[p2[0]][p2[1]];
+    }
+
+    private int isTouchingEdgesX(final IntPoint3D currentPoint) {
         final double xx = Math.abs(currentPoint.x % 1);
         final double xTol = PLAYER_WIDTH / 2 * 1.1;
         if ((1 - xx) <= xTol) {
@@ -62,12 +67,12 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
         }
     }
 
-    int isTouchingEdgesY(final IntPoint3D currentPoint) {
-        final double yy = Math.abs(currentPoint.y % 1);
-        final double yTol = PLAYER_DEPTH / 2 * 1.1;
-        if ((1 - yy) <= yTol) {
+    private int isTouchingEdgesZ(final IntPoint3D currentPoint) {
+        final double zz = Math.abs(currentPoint.z % 1);
+        final double zTol = PLAYER_DEPTH / 2 * 1.1;
+        if ((1 - zz) <= zTol) {
             return 0;
-        } else if (yy <= yTol && yy != 0) {
+        } else if (zz <= zTol && zz != 0) {
             return 2;
         } else {
             return -1;
@@ -76,7 +81,7 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
 
     @Override
     protected void log(SimpleWalkerV1Data data) {
-        log.info("angle={}, goalDirection={}, isTouchingEdge={} touchedEdge={}, goDirection={}, originalGoDirection={}, grid={}", (int) data.angle, data.goalDirection, data.isTouchingEdge, data.touchedEdge, data.goDirection, data.originalGoDirection, Arrays.deepToString(data.grid));
+        log.info("angle={}, goalDirection={}, isTouchingEdge={}, touchedEdge={}, goDirection={}, originalGoDirection={}, grid={}", (int) data.angle, data.goalDirection, data.isTouchingEdge, data.touchedEdge, data.goDirection, data.originalGoDirection, Arrays.deepToString(data.grid));
     }
 
 }

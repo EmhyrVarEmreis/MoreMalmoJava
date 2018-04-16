@@ -70,9 +70,9 @@ public class SimpleTransverseObstaclesMission extends Mission<SimpleTransverseOb
         MissionSpec missionSpec = new MissionSpec();
         missionSpec.timeLimitInSeconds(600);
 
-        TerrainGen.generator.setSeed(777);
+        TerrainGen.generator.setSeed(4561); // 777 V2
 //        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 150, 1, "lava", 0);
-        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 45, 30, 1, "dirt", 1);
+        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 32, 32, 1, "dirt", 1);
 //        startingPointWithDestinationPointPair = TerrainGen.maze(missionSpec, 21, 50);
 
         final int r0 = Math.floorDiv(OBSERVE_GRID_0_RADIUS, 2);
