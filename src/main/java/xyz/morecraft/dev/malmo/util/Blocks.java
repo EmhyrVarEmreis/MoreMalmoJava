@@ -10,7 +10,7 @@ public class Blocks {
     public static String BLOCK_STONE = "stone";
 
     public static boolean isWalkable(String blockName){
-        return BLOCK_STONE.equalsIgnoreCase(blockName);
+        return !BLOCK_DIRT.equalsIgnoreCase(blockName);
     }
 
 }

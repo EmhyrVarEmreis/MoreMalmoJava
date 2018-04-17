@@ -25,11 +25,9 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
         if (isTouchingEdge) {
             data.goDirection = WayUtils.getOppositeSimpleDimension(touchedEdge);
         }
-
         data.originalGoDirection = originalGoDirection;
         data.isTouchingEdge = isTouchingEdge;
         data.touchedEdge = touchedEdge;
-        log.info("goDirection={}", data.goDirection);
     }
 
     /**
@@ -50,8 +48,12 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
     }
 
     private boolean canTouchEdge(final int goDirection, final int[][] transform, final boolean[][] grid) {
-        final int[] p1 = transform[(goDirection + 1) % 4];
-        final int[] p2 = transform[(goDirection + 3) % 4];
+        final int[] p1 = Arrays.copyOf(transform[(goDirection + 1) % 4], 2);
+        final int[] p2 = Arrays.copyOf(transform[(goDirection + 3) % 4], 2);
+        final int index = goDirection % 2;
+        final int adjustment = (goDirection == 1 || goDirection == 2) ? 1 : -1;
+        p1[index] = p1[index] + adjustment;
+        p2[index] = p2[index] + adjustment;
         return !grid[p1[0]][p1[1]] || !grid[p2[0]][p2[1]];
     }
 

@@ -25,22 +25,25 @@ public abstract class SimpleWalker<T extends Mission<?>> implements MissionRunne
             return worldState;
         }
 
+        final double speedMove = 0.65;
+        final double speedStrafe = 0.65;
+
         switch (calculateNextStep(worldObservation, mission)) {
             case 0:
-                agentHost.sendCommand("move 0.5");
+                agentHost.sendCommand("move " + speedMove);
                 agentHost.sendCommand("strafe 0");
                 break;
             case 1:
                 agentHost.sendCommand("move 0");
-                agentHost.sendCommand("strafe 0.4");
+                agentHost.sendCommand("strafe " + speedStrafe);
                 break;
             case 2:
-                agentHost.sendCommand("move -0.5");
+                agentHost.sendCommand("move -" + speedMove);
                 agentHost.sendCommand("strafe 0");
                 break;
             case 3:
                 agentHost.sendCommand("move 0");
-                agentHost.sendCommand("strafe -0.4");
+                agentHost.sendCommand("strafe -" + speedStrafe);
                 break;
             default:
                 break;

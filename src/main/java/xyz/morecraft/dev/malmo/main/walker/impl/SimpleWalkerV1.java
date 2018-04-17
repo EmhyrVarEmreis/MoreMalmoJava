@@ -18,7 +18,7 @@ public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
 
     @Override
     public int stepInterval() {
-        return 200;
+        return 50;
     }
 
     @Override
