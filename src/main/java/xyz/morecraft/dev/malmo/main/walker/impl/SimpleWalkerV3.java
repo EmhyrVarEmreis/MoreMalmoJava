@@ -13,6 +13,7 @@ public class SimpleWalkerV3 extends SimpleWalkerV2 {
 
     private int lastGoDirection;
     private boolean changeLastPos;
+    private IntPoint3D lastPosition;
     private CustomCircularFifoQueue<IntPoint3D> lastPositionQueue = new CustomCircularFifoQueue<>(2);
     private CustomCircularFifoQueue<Integer> lastGoDirectionQueue = new CustomCircularFifoQueue<>(2);
 
@@ -20,31 +21,19 @@ public class SimpleWalkerV3 extends SimpleWalkerV2 {
     protected void calculateGoDirection(final SimpleWalkerV1Data data) {
         super.calculateSimpleGoDirection(data);
         super.adjustDirectionOfTouchedEdges(data);
-//        final IntPoint3D roundedCurrentPoint = data.currentPoint.clone().floor();
-        if (!Objects.equals(data.goDirection, lastGoDirectionQueue.peekLast())) {
-//            log.info("Adding {} to {}", data.goDirection, lastGoDirectionQueue);
+        final IntPoint3D roundedCurrentPoint = data.currentPoint.clone().floor();
+        if (!Objects.equals(roundedCurrentPoint, lastPositionQueue.peekLast()) || !Objects.equals(data.goDirection, lastGoDirectionQueue.peekLast())) {
+            log.info("Adding {} to {}", roundedCurrentPoint, lastPositionQueue);
+            lastPositionQueue.offer(roundedCurrentPoint);
             lastGoDirectionQueue.offer(data.goDirection);
         }
-        log.info("{} {} {}", data.goDirection, lastGoDirectionQueue, lastGoDirectionQueue.peek());
-        if (Objects.equals(WayUtils.getOppositeSimpleDimension(data.goDirection), lastGoDirectionQueue.peek()) && !Objects.equals(lastGoDirectionQueue.peek(), lastGoDirectionQueue.peekLast())) {
-            data.goDirection = WayUtils.getOppositeSimpleDimension(data.goDirection);
-            log.warn("Avoiding circular => {} [{}]", data.goDirection, lastGoDirectionQueue);
+        log.info("Queue: {}", lastPositionQueue);
+        if (roundedCurrentPoint.equals(lastPositionQueue.peek()) && Objects.equals(WayUtils.getOppositeSimpleDimension(data.goDirection), lastGoDirectionQueue.peek()) && !Objects.equals(lastGoDirectionQueue.peek(), lastGoDirectionQueue.peekLast())) {
+            final int newDirection = WayUtils.getOppositeSimpleDimension(data.goDirection);
+            log.warn("Avoiding circular: {}=>{} [{}]", data.goDirection, newDirection, lastGoDirectionQueue);
+            data.goDirection = newDirection;
+            lastGoDirectionQueue.offer(data.goDirection);
         }
-//        if (!roundedCurrentPoint.equals(lastPositionQueue.peekLast())) {
-//            log.info("Adding {} to {}", roundedCurrentPoint, lastPositionQueue);
-//            lastPositionQueue.offer(roundedCurrentPoint);
-//            lastGoDirectionQueue.offer(data.goDirection);
-//        }
-//        log.info("{}", lastPositionQueue);
-//        log.info("{}", lastPositionQueue.peek());
-//        log.info("{}", lastPositionQueue.peekLast());
-//        log.info("{}", roundedCurrentPoint);
-//        if (roundedCurrentPoint.equals(lastPositionQueue.peek())) {
-////            data.goDirection = WayUtils.getOppositeSimpleDimension(lastGoDirectionQueue.element());
-////            data.goDirection = lastGoDirectionQueue.element();
-//            log.warn("Avoiding circular => {}", data.goDirection);
-//        }
-////        log.info("{}", lastPositionQueue);
         super.adjustDirectionOfTouchedEdges(data);
     }
 

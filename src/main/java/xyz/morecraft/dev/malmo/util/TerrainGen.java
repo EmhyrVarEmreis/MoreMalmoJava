@@ -18,7 +18,7 @@ public class TerrainGen {
         final IntPoint3D p2 = new IntPoint3D((int) Math.round(xL / 2.0), h, zL - 1);
         spec.drawCuboid(-1, h - 1, -1, xL + 1, hMax, zL + 1, "stone");
         spec.drawCuboid(0, h + 1, 0, xL, hMax, zL, "air");
-        spec.drawCuboid(-1, hMax, -1, xL + 1, hMax, zL + 1, "glowstone");
+        spec.drawCuboid(-1, hMax, -1, xL + 1, hMax, zL, "glowstone");
         spec.drawBlock(p1.iX(), p1.iY(), p1.iZ(), "grass");
         spec.drawBlock(p2.iX(), p2.iY(), p2.iZ(), "glowstone");
         boolean isStep = true;
@@ -40,7 +40,7 @@ public class TerrainGen {
             drawer = (x, z) -> spec.drawBlock(x, h + yOffset, z, block);
         }
 
-        for (int z = 0; z < zL; z++) {
+        for (int z = 0; z < zL - 1; z++) {
             if (isStep) {
                 z += randInt(0, stepDistance);
             } else {
