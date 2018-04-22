@@ -1,10 +1,7 @@
 package xyz.morecraft.dev.malmo.mission;
 
 import com.google.gson.reflect.TypeToken;
-import com.microsoft.msr.malmo.AgentHost;
-import com.microsoft.msr.malmo.MissionRecordSpec;
-import com.microsoft.msr.malmo.MissionSpec;
-import com.microsoft.msr.malmo.WorldState;
+import com.microsoft.msr.malmo.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -69,10 +66,21 @@ public class SimpleTransverseObstaclesMission extends Mission<SimpleTransverseOb
     protected MissionSpec initMissionSpec() {
         MissionSpec missionSpec = new MissionSpec();
         missionSpec.timeLimitInSeconds(600);
+        missionSpec.allowAllDiscreteMovementCommands();
+        System.out.println();
+        StringVector listOfCommandHandlers = missionSpec.getListOfCommandHandlers(0);
+        for (int i = 0; i < listOfCommandHandlers.size(); i++) {
+            String x = listOfCommandHandlers.get(i);
+            System.out.println(x);
+            StringVector allowedCommands = missionSpec.getAllowedCommands(0, x);
+            for (int l = 0; l < allowedCommands.size(); l++) {
+                System.out.println("\t" + allowedCommands.get(l));
+            }
+        }
 
         TerrainGen.generator.setSeed(4561); // 777 V2
 //        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 150, 1, "lava", 0);
-        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 32, 32, 1, "dirt", 1);
+        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 100, 150, 1, "dirt", 1);
 //        startingPointWithDestinationPointPair = TerrainGen.maze(missionSpec, 21, 50);
 
         final int r0 = Math.floorDiv(OBSERVE_GRID_0_RADIUS, 2);

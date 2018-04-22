@@ -17,6 +17,8 @@ public class TerrainGen {
         final IntPoint3D p1 = new IntPoint3D((int) Math.round(xL / 2.0), h, 0);
         final IntPoint3D p2 = new IntPoint3D((int) Math.round(xL / 2.0), h, zL - 1);
         spec.drawCuboid(-1, h - 1, -1, xL + 1, hMax, zL + 1, "stone");
+        spec.drawCuboid(-1, h, -1, xL + 1, h + 2, zL + 1, block);
+        spec.drawCuboid(0, h, 0, xL, h, zL, "stone");
         spec.drawCuboid(0, h + 1, 0, xL, hMax, zL, "air");
         spec.drawCuboid(-1, hMax, -1, xL + 1, hMax, zL, "glowstone");
         spec.drawBlock(p1.iX(), p1.iY(), p1.iZ(), "grass");

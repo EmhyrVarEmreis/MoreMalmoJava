@@ -18,6 +18,7 @@ import java.io.Writer;
 import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public abstract class Mission<Record> {
 
@@ -34,9 +35,12 @@ public abstract class Mission<Record> {
     @Getter
     private List<Record> recordList;
 
+    private long[] times;
+
     public Mission(String[] argv) {
         this.argv = argv;
         this.recordList = new LinkedList<>();
+        this.times = new long[4];
     }
 
     public IntPoint3D getStartingPoint() {
@@ -85,6 +89,7 @@ public abstract class Mission<Record> {
 
     private <T extends Mission<Record>> void run(MissionRunnerWrapper missionRunnerWrapper) throws Exception {
         log.info("Waiting for the mission to start");
+        times[0] = System.nanoTime();
 
         agentHost = initAgentHost();
         missionSpec = initMissionSpec();
@@ -116,6 +121,9 @@ public abstract class Mission<Record> {
             }
         } while (!worldState.getIsMissionRunning());
 
+        log.info("Mission started!");
+        times[1] = System.nanoTime();
+
         boolean isEnd = false;
         do {
             try {
@@ -128,6 +136,8 @@ public abstract class Mission<Record> {
                 isEnd = true;
             }
         } while (worldState.getIsMissionRunning() && !isEnd);
+
+        times[2] = System.nanoTime();
 
         if (recordList.size() > 0) {
             final String lastJson = "record/last.json";
@@ -146,8 +156,14 @@ public abstract class Mission<Record> {
             }
         }
 
-        log.info("Mission has stopped.");
+        times[3] = System.nanoTime();
+
+        log.info("Mission has stopped; fullTime={}s, preparingTime={}s, runningTime={}s, finishingTime={}s", getDT(times[0], times[3]), getDT(times[0], times[1]), getDT(times[1], times[2]), getDT(times[2], times[3]));
         System.exit(0);
+    }
+
+    private static String getDT(final long a, final long b) {
+        return String.format("%.4f", (b - a) * 1.0 / TimeUnit.SECONDS.toNanos(1) * 1.0);
     }
 
     private static interface MissionRunnerWrapper {

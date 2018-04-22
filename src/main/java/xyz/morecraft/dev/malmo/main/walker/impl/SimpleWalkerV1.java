@@ -17,11 +17,6 @@ import java.util.Arrays;
 public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
 
     @Override
-    public int stepInterval() {
-        return 50;
-    }
-
-    @Override
     public int calculateNextStep(final WorldObservation worldObservation, Mission<?> mission) {
         final String[][][] rawRawGrid = worldObservation.getGrid(SimpleTransverseObstaclesMission.OBSERVE_GRID_0, SimpleTransverseObstaclesMission.OBSERVE_GRID_0_RADIUS, 1, SimpleTransverseObstaclesMission.OBSERVE_GRID_0_RADIUS);
         final String[][] rawGrid = WayUtils.revertGrid(rawRawGrid[0], SimpleTransverseObstaclesMission.OBSERVE_GRID_0_RADIUS);
@@ -99,6 +94,7 @@ public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
                 break;
             }
         }
+        log.info("goalDirection={}, goDirection={}", data.goalDirection, goDirection);
         data.goDirection = goDirection;
     }
 

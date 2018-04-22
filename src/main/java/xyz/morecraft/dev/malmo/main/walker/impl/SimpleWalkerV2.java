@@ -28,6 +28,7 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
         data.originalGoDirection = originalGoDirection;
         data.isTouchingEdge = isTouchingEdge;
         data.touchedEdge = touchedEdge;
+//        log.info("isTouchingEdge={}, touchedEdge={}, originalGoDirection={}, goDirection={}", data.isTouchingEdge, data.touchedEdge, data.originalGoDirection, data.goDirection);
     }
 
     /**
@@ -59,7 +60,7 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
 
     private int isTouchingEdgesX(final IntPoint3D currentPoint) {
         final double xx = Math.abs(currentPoint.x % 1);
-        final double xTol = PLAYER_WIDTH / 2 * 1.1;
+        final double xTol = PLAYER_WIDTH / 2;
         if ((1 - xx) <= xTol) {
             return 3;
         } else if (xx <= xTol && xx != 0) {
@@ -71,7 +72,7 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
 
     private int isTouchingEdgesZ(final IntPoint3D currentPoint) {
         final double zz = Math.abs(currentPoint.z % 1);
-        final double zTol = PLAYER_DEPTH / 2 * 1.1;
+        final double zTol = PLAYER_DEPTH / 2;
         if ((1 - zz) <= zTol) {
             return 0;
         } else if (zz <= zTol && zz != 0) {

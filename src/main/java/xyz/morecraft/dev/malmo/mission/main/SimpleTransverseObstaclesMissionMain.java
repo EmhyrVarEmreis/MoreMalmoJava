@@ -13,6 +13,7 @@ import xyz.morecraft.dev.malmo.util.Util;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -22,6 +23,8 @@ public class SimpleTransverseObstaclesMissionMain {
     public static void main(String[] args) throws Exception {
         Util.ensureMalmoXsdPath();
         Util.loadMalmoLib();
+
+        Locale.setDefault(Locale.US);
 
         final Map<Integer, Supplier<MissionRunner<SimpleTransverseObstaclesMission>>> map = new HashMap<>();
 
