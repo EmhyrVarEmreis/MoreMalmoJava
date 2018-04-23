@@ -23,6 +23,10 @@ public class SimpleNeural implements MissionRunner<SimpleTransverseObstaclesMiss
     }
 
     @Override
+    public void prepare(SimpleTransverseObstaclesMission mission) {
+    }
+
+    @Override
     public WorldState step(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation, SimpleTransverseObstaclesMission mission) throws Exception {
         if (Objects.isNull(worldObservation)) {
             return worldState;
@@ -32,7 +36,7 @@ public class SimpleNeural implements MissionRunner<SimpleTransverseObstaclesMiss
             network = new GsonBuilder().create().fromJson(new FileReader("tmp/0.3406.9.network.json"), SimpleLayeredNeuralNetwork.class);
         }
         Thread.sleep(50);
-        double[] output = network.thinkOutput(new double[][]{SimpleTransverseObstaclesMission.normalizeGrid(worldObservation.getGrid(SimpleTransverseObstaclesMission.OBSERVE_GRID_1, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS, 1, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS))})[0];
+        double[] output = network.thinkOutput(new double[][]{SimpleTransverseObstaclesMission.normalizeGrid(mission.getZeroGrid(worldObservation), mission.getDefaultObserveGridWidth())})[0];
 
         int max = 0;
         for (int j = 0; j < output.length; j++) {

@@ -34,8 +34,9 @@ public class WalkerPlayground {
         final IntPoint3D currentPoint = new IntPoint3D(0, 0, 0);
         final IntPoint3D destinationPoint = new IntPoint3D(15, 0, 15);
 
+        //noinspection unchecked
         simpleWalker.calculateNextStep(
-                rawGrid, currentPoint, destinationPoint
+                rawGrid, currentPoint, destinationPoint, null
         );
 
         Thread.sleep(500);

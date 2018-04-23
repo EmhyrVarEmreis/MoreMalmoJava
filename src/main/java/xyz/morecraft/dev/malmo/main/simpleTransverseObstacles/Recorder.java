@@ -23,13 +23,17 @@ public class Recorder implements MissionRunner<SimpleTransverseObstaclesMission>
     }
 
     @Override
-    public WorldState step(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation, SimpleTransverseObstaclesMission mission) throws Exception {
+    public void prepare(SimpleTransverseObstaclesMission mission) {
+    }
+
+    @Override
+    public WorldState step(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation, SimpleTransverseObstaclesMission mission) {
         if (Objects.isNull(worldObservation)) {
             return worldState;
         }
 
         final double distance = worldObservation.getDistance(SimpleTransverseObstaclesMission.OBSERVE_DISTANCE_1);
-        final SimpleTransverseObstaclesMission.Record record = new SimpleTransverseObstaclesMission.Record(globalKeyListener.getKeySet(), worldObservation.getGrid(SimpleTransverseObstaclesMission.OBSERVE_GRID_1, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS, 1, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS));
+        final SimpleTransverseObstaclesMission.Record record = new SimpleTransverseObstaclesMission.Record(globalKeyListener.getKeySet(), mission.getZeroGrid(worldObservation));
         mission.record(record);
         log.info(
                 "received: keys=[{}], distance={}, grid={}",

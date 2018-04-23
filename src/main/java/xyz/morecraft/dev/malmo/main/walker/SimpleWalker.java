@@ -2,15 +2,15 @@ package xyz.morecraft.dev.malmo.main.walker;
 
 import com.microsoft.msr.malmo.AgentHost;
 import com.microsoft.msr.malmo.WorldState;
-import xyz.morecraft.dev.malmo.proto.Mission;
 import xyz.morecraft.dev.malmo.proto.MissionRunner;
+import xyz.morecraft.dev.malmo.proto.MissionWithObserveGrid;
 import xyz.morecraft.dev.malmo.util.Blocks;
 import xyz.morecraft.dev.malmo.util.GridVisualizer;
 import xyz.morecraft.dev.malmo.util.WorldObservation;
 
 import java.util.Objects;
 
-public abstract class SimpleWalker<T extends Mission<?>> implements MissionRunner<T> {
+public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implements MissionRunner<T> {
 
     protected GridVisualizer gridVisualizer = new GridVisualizer(true, true);
 
@@ -27,6 +27,10 @@ public abstract class SimpleWalker<T extends Mission<?>> implements MissionRunne
     @Override
     public int stepInterval() {
         return 20;
+    }
+
+    @Override
+    public void prepare(T mission) {
     }
 
     @Override
@@ -105,7 +109,7 @@ public abstract class SimpleWalker<T extends Mission<?>> implements MissionRunne
      * @param worldObservation Current observations object (not null)
      * @return Calculated direction.
      */
-    public abstract int calculateNextStep(final WorldObservation worldObservation, Mission<?> mission);
+    public abstract int calculateNextStep(final WorldObservation worldObservation, MissionWithObserveGrid<?> mission);
 
     protected static boolean[][] toBooleanGrid(final String[][] rawGrid, int r) {
         final boolean[][] b = new boolean[r][r];

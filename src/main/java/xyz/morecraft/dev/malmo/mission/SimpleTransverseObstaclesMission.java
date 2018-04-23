@@ -9,7 +9,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import xyz.morecraft.dev.malmo.proto.GoalReachedException;
-import xyz.morecraft.dev.malmo.proto.Mission;
+import xyz.morecraft.dev.malmo.proto.MissionWithObserveGrid;
 import xyz.morecraft.dev.malmo.util.IntPoint3D;
 import xyz.morecraft.dev.malmo.util.TerrainGen;
 import xyz.morecraft.dev.malmo.util.WorldObservation;
@@ -20,22 +20,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class SimpleTransverseObstaclesMission extends Mission<SimpleTransverseObstaclesMission.Record> {
+public class SimpleTransverseObstaclesMission extends MissionWithObserveGrid<SimpleTransverseObstaclesMission.Record> {
 
-    public final static String OBSERVE_GRID_0 = "og0";
-    public final static String OBSERVE_GRID_1 = "og1";
-    public final static String OBSERVE_GRID_2 = "og2";
     public final static String OBSERVE_DISTANCE_1 = "End";
-    public final static int OBSERVE_GRID_0_RADIUS = 3;
-    public final static int OBSERVE_GRID_1_RADIUS = 7;
-    public final static int OBSERVE_GRID_2_WIDTH = 5;
     public final static double tol = 0.25f;
 
     @Getter
     private Pair<IntPoint3D, IntPoint3D> startingPointWithDestinationPointPair;
 
-    public SimpleTransverseObstaclesMission(String[] argv) {
-        super(argv);
+    public SimpleTransverseObstaclesMission(String[] argv, int defaultObserveGridRadius) {
+        super(argv, defaultObserveGridRadius);
     }
 
     @Override
@@ -83,11 +77,7 @@ public class SimpleTransverseObstaclesMission extends Mission<SimpleTransverseOb
         startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 100, 150, 1, "dirt", 1);
 //        startingPointWithDestinationPointPair = TerrainGen.maze(missionSpec, 21, 50);
 
-        final int r0 = Math.floorDiv(OBSERVE_GRID_0_RADIUS, 2);
-        final int r1 = Math.floorDiv(OBSERVE_GRID_1_RADIUS, 2);
-        missionSpec.observeGrid(-r0, -1, -r0, r0, -1, r0, OBSERVE_GRID_0);
-        missionSpec.observeGrid(-r1, -1, -r1, r1, -1, r1, OBSERVE_GRID_1);
-        missionSpec.observeGrid(-OBSERVE_GRID_2_WIDTH, -1, 1, OBSERVE_GRID_2_WIDTH, -1, 1, OBSERVE_GRID_2);
+        missionSpec.observeGrid(-getDefaultObserveGridRadius(), -1, -getDefaultObserveGridRadius(), getDefaultObserveGridRadius(), -1, getDefaultObserveGridRadius(), getDefaultObserveGridName());
         missionSpec.observeDistance(startingPointWithDestinationPointPair.getRight().fX() + 0.5f, startingPointWithDestinationPointPair.getRight().fY() + 1, startingPointWithDestinationPointPair.getRight().fZ() + 0.5f, OBSERVE_DISTANCE_1);
         missionSpec.startAt(startingPointWithDestinationPointPair.getLeft().fX(), startingPointWithDestinationPointPair.getLeft().fY(), startingPointWithDestinationPointPair.getLeft().fZ());
         missionSpec.setTimeOfDay(12000, false);
@@ -99,10 +89,6 @@ public class SimpleTransverseObstaclesMission extends Mission<SimpleTransverseOb
     @Override
     protected MissionRecordSpec initMissionRecordSpec() {
         MissionRecordSpec missionRecordSpec = new MissionRecordSpec("./record/lava1mission.tgz");
-//        missionRecordSpec.recordMP4(20, 400000);
-//        missionRecordSpec.recordCommands();
-//        missionRecordSpec.recordRewards();
-//        missionRecordSpec.recordObservations();
         return missionRecordSpec;
     }
 
@@ -142,7 +128,7 @@ public class SimpleTransverseObstaclesMission extends Mission<SimpleTransverseOb
 
         int i = 0;
         for (Record record : recordSet) {
-            input[i] = normalizeGrid(record.getGrid());
+            input[i] = normalizeGrid(record.getGrid(), getDefaultObserveGridWidth());
             output[i] = new double[]{
                     record.getKeys().contains("W") ? 1 : 0,
                     record.getKeys().contains("A") ? 1 : 0,
@@ -167,8 +153,8 @@ public class SimpleTransverseObstaclesMission extends Mission<SimpleTransverseOb
         }.getType();
     }
 
-    public static double[] normalizeGrid(String[][][] grid) {
-        final double[] t = new double[OBSERVE_GRID_1_RADIUS * OBSERVE_GRID_1_RADIUS];
+    public static double[] normalizeGrid(String[][][] grid, final int width) {
+        final double[] t = new double[width * width];
         int i = 0;
         for (String[] strings : grid[0]) {
             for (String string : strings) {

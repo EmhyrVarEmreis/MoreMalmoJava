@@ -5,8 +5,7 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import xyz.morecraft.dev.malmo.main.walker.SimpleWalker;
-import xyz.morecraft.dev.malmo.mission.SimpleTransverseObstaclesMission;
-import xyz.morecraft.dev.malmo.proto.Mission;
+import xyz.morecraft.dev.malmo.proto.MissionWithObserveGrid;
 import xyz.morecraft.dev.malmo.util.IntPoint3D;
 import xyz.morecraft.dev.malmo.util.WayUtils;
 import xyz.morecraft.dev.malmo.util.WorldObservation;
@@ -14,17 +13,17 @@ import xyz.morecraft.dev.malmo.util.WorldObservation;
 import java.util.Arrays;
 
 @Slf4j
-public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
+public class SimpleWalkerV1<T extends MissionWithObserveGrid<?>> extends SimpleWalker<T> {
 
     @Override
-    public int calculateNextStep(final WorldObservation worldObservation, Mission<?> mission) {
-        final String[][][] rawRawGrid = worldObservation.getGrid(SimpleTransverseObstaclesMission.OBSERVE_GRID_0, SimpleTransverseObstaclesMission.OBSERVE_GRID_0_RADIUS, 1, SimpleTransverseObstaclesMission.OBSERVE_GRID_0_RADIUS);
-        final String[][] rawGrid = WayUtils.revertGrid(rawRawGrid[0], SimpleTransverseObstaclesMission.OBSERVE_GRID_0_RADIUS);
+    public int calculateNextStep(final WorldObservation worldObservation, MissionWithObserveGrid<?> mission) {
+        final String[][][] rawRawGrid = mission.getZeroGrid(worldObservation);
+        final String[][] rawGrid = WayUtils.revertGrid(rawRawGrid[0], mission.getDefaultObserveGridWidth());
 
         final IntPoint3D currentPoint = worldObservation.getPos();
         final IntPoint3D destinationPoint = mission.getDestinationPoint();
 
-        return calculateNextStep(rawGrid, currentPoint, destinationPoint);
+        return calculateNextStep(rawGrid, currentPoint, destinationPoint, mission);
     }
 
     /**
@@ -40,8 +39,8 @@ public class SimpleWalkerV1<T extends Mission<?>> extends SimpleWalker<T> {
      * @param destinationPoint Destination location.
      * @return Calculated direction.
      */
-    public int calculateNextStep(final String[][] rawGrid, final IntPoint3D currentPoint, final IntPoint3D destinationPoint) {
-        final boolean[][] grid = toBooleanGrid(rawGrid, SimpleTransverseObstaclesMission.OBSERVE_GRID_0_RADIUS);
+    public int calculateNextStep(final String[][] rawGrid, final IntPoint3D currentPoint, final IntPoint3D destinationPoint, MissionWithObserveGrid<?> mission) {
+        final boolean[][] grid = toBooleanGrid(rawGrid, mission.getDefaultObserveGridWidth());
 
         gridVisualizer.updateGrid(rawGrid);
 

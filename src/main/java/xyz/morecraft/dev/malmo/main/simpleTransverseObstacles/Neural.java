@@ -41,7 +41,14 @@ public class Neural implements MissionRunner<SimpleTransverseObstaclesMission> {
     private List<Double> lastDistanceQueue = new ArrayList<>(10000);
     private MultiLayerNetwork multiLayerNetwork;
 
-    public Neural() throws IOException {
+    @Override
+    public int stepInterval() {
+        return 100;
+    }
+
+    @Override
+    public void prepare(SimpleTransverseObstaclesMission mission) throws IOException {
+
         int layerNum = 0;
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .iterations(3000)
@@ -55,7 +62,7 @@ public class Neural implements MissionRunner<SimpleTransverseObstaclesMission> {
                 .list()
                 .layer(layerNum++,
                         new DenseLayer.Builder()
-                                .nIn(SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS * SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS)
+                                .nIn(mission.getDefaultObserveGridSize())
                                 .nOut(50)
                                 .activation(Activation.SOFTMAX)
                                 .weightInit(WeightInit.DISTRIBUTION)
@@ -106,7 +113,7 @@ public class Neural implements MissionRunner<SimpleTransverseObstaclesMission> {
         treeSet.addAll(recordsAll);
         final SimpleTransverseObstaclesMission.Record[] records = treeSet.toArray(new SimpleTransverseObstaclesMission.Record[0]);
 
-        INDArray input = Nd4j.zeros(records.length, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS * SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS);
+        INDArray input = Nd4j.zeros(records.length, mission.getDefaultObserveGridSize());
         INDArray output = Nd4j.zeros(records.length, 3);
 
         for (int i = 0; i < records.length; i++) {
@@ -144,26 +151,21 @@ public class Neural implements MissionRunner<SimpleTransverseObstaclesMission> {
     }
 
     @Override
-    public int stepInterval() {
-        return 100;
-    }
-
-    @Override
     public WorldState step(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation, SimpleTransverseObstaclesMission mission) {
         if (Objects.isNull(worldObservation)) {
             return worldState;
         }
 
-        final String[][][] rawGrid = worldObservation.getGrid(SimpleTransverseObstaclesMission.OBSERVE_GRID_1, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS, 1, SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS);
-        final String[] lineGrid = worldObservation.getGrid(SimpleTransverseObstaclesMission.OBSERVE_GRID_2, SimpleTransverseObstaclesMission.OBSERVE_GRID_2_WIDTH * 2 + 1);
-        final double[] grid = SimpleTransverseObstaclesMission.normalizeGrid(rawGrid);
+        final String[][][] rawGrid = mission.getZeroGrid(worldObservation);
+        final String[] lineGrid = worldObservation.getGrid(mission.getDefaultObserveGridName(), mission.getDefaultObserveGridSize());
+        final double[] grid = SimpleTransverseObstaclesMission.normalizeGrid(rawGrid, mission.getDefaultObserveGridWidth());
 
-        final INDArray input = Nd4j.zeros(SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS * SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS);
+        final INDArray input = Nd4j.zeros(mission.getDefaultObserveGridSize());
         for (int j = 0; j < grid.length; j++) {
             input.putScalar(j, grid[j] == 1 ? 1 : 0);
         }
 
-        gridVisualizer.updateGrid(WayUtils.revertGrid(rawGrid[0], SimpleTransverseObstaclesMission.OBSERVE_GRID_1_RADIUS));
+        gridVisualizer.updateGrid(WayUtils.revertGrid(rawGrid[0], mission.getDefaultObserveGridWidth()));
 
         lastDistanceQueue.add(worldObservation.getDistance(SimpleTransverseObstaclesMission.OBSERVE_DISTANCE_1));
 

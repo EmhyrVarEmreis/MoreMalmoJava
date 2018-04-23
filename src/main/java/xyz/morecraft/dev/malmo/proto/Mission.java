@@ -73,6 +73,7 @@ public abstract class Mission<Record> {
 
     public <T extends Mission<Record>> void run(MissionRunner<T> missionRunner) throws Exception {
         @SuppressWarnings("unchecked") final T thiss = (T) this;
+        missionRunner.prepare(thiss);
         run((agentHost, worldState, worldObservation) -> {
             Thread.sleep(missionRunner.stepInterval());
             return missionRunner.step(agentHost, worldState, worldObservation, thiss);

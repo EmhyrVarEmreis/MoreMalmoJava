@@ -8,6 +8,8 @@ public interface MissionRunner<T extends Mission<?>> {
 
     int stepInterval();
 
+    void prepare(T mission) throws Exception;
+
     WorldState step(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation, T mission) throws Exception;
 
 }

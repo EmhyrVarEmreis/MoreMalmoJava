@@ -11,7 +11,6 @@ import xyz.morecraft.dev.malmo.mission.SimpleTransverseObstaclesMission;
 import xyz.morecraft.dev.malmo.proto.MissionRunner;
 import xyz.morecraft.dev.malmo.util.Util;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -29,20 +28,13 @@ public class SimpleTransverseObstaclesMissionMain {
         final Map<Integer, Supplier<MissionRunner<SimpleTransverseObstaclesMission>>> map = new HashMap<>();
 
         map.put(0, Recorder::new);
-        map.put(1, () -> {
-            try {
-                return new Neural();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
+        map.put(1, Neural::new);
         map.put(2, SimpleNeural::new);
         map.put(3, SimpleWalkerV1::new);
         map.put(4, SimpleWalkerV2::new);
         map.put(5, SimpleWalkerV3::new);
 
-        new SimpleTransverseObstaclesMission(args).run(map.get(5).get());
+        new SimpleTransverseObstaclesMission(args, 1).run(map.get(5).get());
     }
 
 }
