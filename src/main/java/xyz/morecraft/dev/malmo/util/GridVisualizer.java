@@ -67,7 +67,7 @@ public class GridVisualizer extends JFrame {
         this.repaint();
     }
 
-    public void drawDir(int goDirection) {
+    public void drawDir(CardinalDirection goDirection) {
         this.gridVisualizerPanel.setDir(goDirection);
         this.repaint();
     }
@@ -78,7 +78,7 @@ public class GridVisualizer extends JFrame {
 
         private String[][] grid;
         private double angle;
-        private int dir;
+        private CardinalDirection dir;
 
         private void setGrid(String[][] grid) {
             this.grid = grid;
@@ -88,7 +88,7 @@ public class GridVisualizer extends JFrame {
             this.angle = angle;
         }
 
-        private void setDir(int dir) {
+        private void setDir(CardinalDirection dir) {
             this.dir = dir;
         }
 

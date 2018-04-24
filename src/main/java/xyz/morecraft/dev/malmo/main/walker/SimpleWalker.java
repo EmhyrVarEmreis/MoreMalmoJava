@@ -5,6 +5,7 @@ import com.microsoft.msr.malmo.WorldState;
 import xyz.morecraft.dev.malmo.proto.MissionRunner;
 import xyz.morecraft.dev.malmo.proto.MissionWithObserveGrid;
 import xyz.morecraft.dev.malmo.util.Blocks;
+import xyz.morecraft.dev.malmo.util.CardinalDirection;
 import xyz.morecraft.dev.malmo.util.GridVisualizer;
 import xyz.morecraft.dev.malmo.util.WorldObservation;
 
@@ -46,7 +47,7 @@ public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implemen
             agentHost.sendCommand("turn 0");
         }
 
-        final int goDirection = calculateNextStep(worldObservation, mission);
+        final CardinalDirection goDirection = calculateNextStep(worldObservation, mission);
         if (isContinuous) {
             sendContinuousCommands(agentHost, goDirection);
         } else {
@@ -56,21 +57,21 @@ public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implemen
         return worldState;
     }
 
-    private void sendContinuousCommands(final AgentHost agentHost, final int goDirection) {
+    private void sendContinuousCommands(final AgentHost agentHost, final CardinalDirection goDirection) {
         switch (goDirection) {
-            case 0:
+            case N:
                 agentHost.sendCommand("move " + speedMove);
                 agentHost.sendCommand("strafe 0");
                 break;
-            case 1:
+            case E:
                 agentHost.sendCommand("move 0");
                 agentHost.sendCommand("strafe " + speedStrafe);
                 break;
-            case 2:
+            case S:
                 agentHost.sendCommand("move -" + speedMove);
                 agentHost.sendCommand("strafe 0");
                 break;
-            case 3:
+            case W:
                 agentHost.sendCommand("move 0");
                 agentHost.sendCommand("strafe -" + speedStrafe);
                 break;
@@ -79,18 +80,18 @@ public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implemen
         }
     }
 
-    private void sendNonContinuousCommands(final AgentHost agentHost, final int goDirection) {
+    private void sendNonContinuousCommands(final AgentHost agentHost, final CardinalDirection goDirection) {
         switch (goDirection) {
-            case 0:
+            case N:
                 agentHost.sendCommand("movenorth");
                 break;
-            case 1:
+            case E:
                 agentHost.sendCommand("moveeast");
                 break;
-            case 2:
+            case S:
                 agentHost.sendCommand("movesouth");
                 break;
-            case 3:
+            case W:
                 agentHost.sendCommand("movewest");
                 break;
             default:
@@ -109,7 +110,7 @@ public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implemen
      * @param worldObservation Current observations object (not null)
      * @return Calculated direction.
      */
-    public abstract int calculateNextStep(final WorldObservation worldObservation, MissionWithObserveGrid<?> mission);
+    public abstract CardinalDirection calculateNextStep(final WorldObservation worldObservation, MissionWithObserveGrid<?> mission);
 
     protected static boolean[][] toBooleanGrid(final String[][] rawGrid, int r) {
         final boolean[][] b = new boolean[r][r];

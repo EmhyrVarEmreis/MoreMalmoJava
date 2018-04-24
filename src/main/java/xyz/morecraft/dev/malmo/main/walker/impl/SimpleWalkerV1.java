@@ -6,17 +6,20 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import xyz.morecraft.dev.malmo.main.walker.SimpleWalker;
 import xyz.morecraft.dev.malmo.proto.MissionWithObserveGrid;
+import xyz.morecraft.dev.malmo.util.CardinalDirection;
 import xyz.morecraft.dev.malmo.util.IntPoint3D;
 import xyz.morecraft.dev.malmo.util.WayUtils;
 import xyz.morecraft.dev.malmo.util.WorldObservation;
 
 import java.util.Arrays;
 
+import static xyz.morecraft.dev.malmo.util.CardinalDirection.W;
+
 @Slf4j
 public class SimpleWalkerV1<T extends MissionWithObserveGrid<?>> extends SimpleWalker<T> {
 
     @Override
-    public int calculateNextStep(final WorldObservation worldObservation, MissionWithObserveGrid<?> mission) {
+    public CardinalDirection calculateNextStep(final WorldObservation worldObservation, MissionWithObserveGrid<?> mission) {
         final String[][][] rawRawGrid = mission.getZeroGrid(worldObservation);
         final String[][] rawGrid = WayUtils.revertGrid(rawRawGrid[0], mission.getDefaultObserveGridWidth());
 
@@ -26,20 +29,7 @@ public class SimpleWalkerV1<T extends MissionWithObserveGrid<?>> extends SimpleW
         return calculateNextStep(rawGrid, currentPoint, destinationPoint, mission);
     }
 
-    /**
-     * Directions:
-     * <pre>
-     *      0
-     *  3       1
-     *      2
-     * </pre>
-     *
-     * @param rawGrid          Raw 2d grid fetched from WorldObservation.
-     * @param currentPoint     Player location.
-     * @param destinationPoint Destination location.
-     * @return Calculated direction.
-     */
-    public int calculateNextStep(final String[][] rawGrid, final IntPoint3D currentPoint, final IntPoint3D destinationPoint, MissionWithObserveGrid<?> mission) {
+    public CardinalDirection calculateNextStep(final String[][] rawGrid, final IntPoint3D currentPoint, final IntPoint3D destinationPoint, MissionWithObserveGrid<?> mission) {
         final boolean[][] grid = toBooleanGrid(rawGrid, mission.getDefaultObserveGridWidth());
 
         gridVisualizer.updateGrid(rawGrid);
@@ -48,7 +38,7 @@ public class SimpleWalkerV1<T extends MissionWithObserveGrid<?>> extends SimpleW
 
         gridVisualizer.drawAngle(angle);
 
-        final int goalDirection = (Math.abs((int) Math.floor(angle / 90.0 + 0.5)) + 3) % 4;
+        final CardinalDirection goalDirection = CardinalDirection.values()[(Math.abs((int) Math.floor(angle / 90.0 + 0.5)) + 3) % 4];
         final int[][] transform = new int[][]{
                 {0, 1},
                 {1, 2},
@@ -78,22 +68,21 @@ public class SimpleWalkerV1<T extends MissionWithObserveGrid<?>> extends SimpleW
     }
 
     protected void calculateSimpleGoDirection(final SimpleWalkerV1Data data) {
-        int goDirection = 0;
+        CardinalDirection goDirection = W;
         for (int i = 0; i < 2; i++) {
-            final int j = (i + data.goalDirection) % 4;
+            final int j = (i + data.goalDirection.ordinal()) % 4;
             final int[] p = data.transform[j];
             if (data.grid[p[0]][p[1]]) {
-                goDirection = j;
+                goDirection = CardinalDirection.values()[j];
                 break;
             }
-            final int jj = (3 - i + data.goalDirection) % 4;
+            final int jj = (3 - i + data.goalDirection.ordinal()) % 4;
             final int[] pp = data.transform[jj];
             if (data.grid[pp[0]][pp[1]]) {
-                goDirection = jj;
+                goDirection = CardinalDirection.values()[jj];
                 break;
             }
         }
-        log.info("goalDirection={}, goDirection={}", data.goalDirection, goDirection);
         data.goDirection = goDirection;
     }
 
@@ -109,15 +98,12 @@ public class SimpleWalkerV1<T extends MissionWithObserveGrid<?>> extends SimpleW
         protected double angle;
         protected int[][] transform;
         protected boolean[][] grid;
-        protected int goDirection;
-        protected int goalDirection;
+        protected CardinalDirection goDirection;
+        protected CardinalDirection goalDirection;
         // V2
-        protected int originalGoDirection;
-        protected int touchedEdge;
+        protected CardinalDirection originalGoDirection;
+        protected CardinalDirection touchedEdge;
         protected boolean isTouchingEdge;
-        // V3
-        protected IntPoint3D lastPosition;
-        protected int lastGoDirection;
     }
 
 }

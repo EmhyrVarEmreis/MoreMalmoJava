@@ -1,5 +1,7 @@
 package xyz.morecraft.dev.malmo.util;
 
+import static xyz.morecraft.dev.malmo.util.CardinalDirection.*;
+
 public class WayUtils {
 
     public static String[][] revertGrid(String[][] oldGrid, int r) {
@@ -20,15 +22,15 @@ public class WayUtils {
         return angle;
     }
 
-    public static int getOppositeSimpleDimension(final int dim) {
-        if (dim == 0) {
-            return 2;
-        } else if (dim == 1) {
-            return 3;
-        } else if (dim == 2) {
-            return 0;
-        } else if (dim == 3) {
-            return 1;
+    public static CardinalDirection getOppositeSimpleDimension(final CardinalDirection dim) {
+        if (dim == N) {
+            return S;
+        } else if (dim == E) {
+            return W;
+        } else if (dim == S) {
+            return N;
+        } else if (dim == W) {
+            return E;
         } else {
             return dim;
         }

@@ -3,6 +3,7 @@ package xyz.morecraft.dev.malmo.main.walker.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.lang3.tuple.MutablePair;
+import xyz.morecraft.dev.malmo.util.CardinalDirection;
 import xyz.morecraft.dev.malmo.util.IntPoint3D;
 import xyz.morecraft.dev.malmo.util.WayUtils;
 
@@ -10,25 +11,27 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import static xyz.morecraft.dev.malmo.util.CardinalDirection.N;
+
 @Slf4j
 public class SimpleWalkerV3 extends SimpleWalkerV2 {
 
-    private CustomCircularFifoQueue<MutablePair<IntPoint3D, Integer>> lastPositionQueue = new CustomCircularFifoQueue<>(3);
+    private CustomCircularFifoQueue<MutablePair<IntPoint3D, CardinalDirection>> lastPositionQueue = new CustomCircularFifoQueue<>(3);
 
     @Override
     protected void calculateGoDirection(final SimpleWalkerV1Data data) {
         super.calculateSimpleGoDirection(data);
         super.adjustDirectionOfTouchedEdges(data);
         final IntPoint3D roundedCurrentPoint = data.currentPoint.clone().floor();
-        final MutablePair<IntPoint3D, Integer> peek = lastPositionQueue.peek();
-        final MutablePair<IntPoint3D, Integer> peekLast = lastPositionQueue.peekLast();
+        final MutablePair<IntPoint3D, CardinalDirection> peek = lastPositionQueue.peek();
+        final MutablePair<IntPoint3D, CardinalDirection> peekLast = lastPositionQueue.peekLast();
         final boolean samePosition = Objects.nonNull(peek) && Objects.equals(roundedCurrentPoint, peek.getLeft());
         final boolean samePositionLast = Objects.nonNull(peekLast) && Objects.equals(roundedCurrentPoint, peekLast.getLeft());
         if (samePosition) {
             final int[] p = data.transform[0];
             final boolean canGoNorth = data.grid[p[0]][p[1]];
-            final int newDir = canGoNorth ? 0 : WayUtils.getOppositeSimpleDimension(data.goDirection);
-            final int[] pp = data.transform[newDir];
+            final CardinalDirection newDir = canGoNorth ? N : WayUtils.getOppositeSimpleDimension(data.goDirection);
+            final int[] pp = data.transform[newDir.ordinal()];
             final boolean canGo = data.grid[pp[0]][pp[1]];
             if (canGo) {
                 log.info("Adjusting goDirection from {} to {} (canGoNorth={})", data.goDirection, newDir, canGoNorth);
@@ -48,15 +51,13 @@ public class SimpleWalkerV3 extends SimpleWalkerV2 {
 
     @Override
     protected void log(SimpleWalkerV1Data data) {
-        log.info("angle={}, goalDirection={}, isTouchingEdge={}, touchedEdge={}, goDirection={}, originalGoDirection={}, lastGoDirection={}, lastPosition={}, grid={}",
+        log.info("angle={}, goalDirection={}, isTouchingEdge={}, touchedEdge={}, goDirection={}, originalGoDirection={}, grid={}",
                 (int) data.angle,
                 data.goalDirection,
                 data.isTouchingEdge,
                 data.touchedEdge,
                 data.goDirection,
                 data.originalGoDirection,
-                data.lastGoDirection,
-                data.lastPosition,
                 Arrays.deepToString(data.grid)
         );
     }
