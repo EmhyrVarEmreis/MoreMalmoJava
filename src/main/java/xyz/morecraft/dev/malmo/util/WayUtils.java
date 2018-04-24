@@ -1,5 +1,7 @@
 package xyz.morecraft.dev.malmo.util;
 
+import java.util.Collection;
+
 import static xyz.morecraft.dev.malmo.util.CardinalDirection.*;
 
 public class WayUtils {
@@ -34,6 +36,27 @@ public class WayUtils {
         } else {
             return dim;
         }
+    }
+
+    public static CardinalDirection someAlgorithm(final boolean[][] grid, final int goalX, final int goalY) {
+        return someAlgorithm(grid, grid[0].length / 2, grid.length / 2, goalX, goalY);
+    }
+
+    // x/y starting from 0
+    private static CardinalDirection someAlgorithm(final boolean[][] grid, final int x, final int y, final int goalX, final int goalY) {
+        for (int i = Math.min(y - 1, grid.length); i < Math.min((y + 1), grid.length); i++) {
+            for (int j = Math.min(x - 1, grid[0].length); j < Math.min((x + 1), grid[0].length); j++) {
+                if (grid[i][j]) {
+
+                }
+            }
+        }
+        return N;
+    }
+
+    private static Collection<CardinalDirection> someAlgorithm(final boolean[][] grid, final int x, final int y, final int goalX, final int goalY, final Collection<CardinalDirection> trace) {
+
+        return trace;
     }
 
 }
