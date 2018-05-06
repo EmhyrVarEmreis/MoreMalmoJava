@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import xyz.morecraft.dev.malmo.main.simpleTransverseObstacles.Neural;
 import xyz.morecraft.dev.malmo.main.simpleTransverseObstacles.Recorder;
 import xyz.morecraft.dev.malmo.main.simpleTransverseObstacles.SimpleNeural;
+import xyz.morecraft.dev.malmo.main.walker.impl.SimpleWalkerB1;
 import xyz.morecraft.dev.malmo.main.walker.impl.SimpleWalkerV1;
 import xyz.morecraft.dev.malmo.main.walker.impl.SimpleWalkerV2;
 import xyz.morecraft.dev.malmo.main.walker.impl.SimpleWalkerV3;
@@ -19,6 +20,7 @@ import java.util.function.Supplier;
 @Slf4j
 public class SimpleTransverseObstaclesMissionMain {
 
+
     public static void main(String[] args) throws Exception {
         Util.ensureMalmoXsdPath();
         Util.loadMalmoLib();
@@ -33,8 +35,9 @@ public class SimpleTransverseObstaclesMissionMain {
         map.put(3, SimpleWalkerV1::new);
         map.put(4, SimpleWalkerV2::new);
         map.put(5, SimpleWalkerV3::new);
+        map.put(6, SimpleWalkerB1::new);
 
-        new SimpleTransverseObstaclesMission(args, 1).run(map.get(5).get());
+        new SimpleTransverseObstaclesMission(args, 1).run(map.get(6).get());
     }
 
 }

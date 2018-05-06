@@ -19,6 +19,11 @@ import static xyz.morecraft.dev.malmo.util.CardinalDirection.W;
 public class SimpleWalkerV1<T extends MissionWithObserveGrid<?>> extends SimpleWalker<T> {
 
     @Override
+    public int stepInterval() {
+        return 20;
+    }
+
+    @Override
     public CardinalDirection calculateNextStep(final WorldObservation worldObservation, MissionWithObserveGrid<?> mission) {
         final String[][][] rawRawGrid = mission.getZeroGrid(worldObservation);
         final String[][] rawGrid = WayUtils.revertGrid(rawRawGrid[0], mission.getDefaultObserveGridWidth());
