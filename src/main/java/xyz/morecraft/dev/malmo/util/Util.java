@@ -21,7 +21,7 @@ public class Util {
 
     public static void loadMalmoLib() {
         try {
-            NativeUtils.loadLibraryFromJar("/lib/malmo-0.31.0.dll");
+            NativeUtils.loadLibraryFromJar("/lib/malmo-0.34.0.dll");
         } catch (IOException e) {
             error(e.getMessage());
         }

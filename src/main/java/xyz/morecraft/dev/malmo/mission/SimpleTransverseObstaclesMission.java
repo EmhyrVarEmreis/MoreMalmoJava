@@ -74,7 +74,7 @@ public class SimpleTransverseObstaclesMission extends MissionWithObserveGrid<Sim
 
         TerrainGen.generator.setSeed(4561); // 777 V2
 //        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 150, 1, "lava", 0);
-        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 100, 150, 1, "dirt", 1);
+        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 10, 10, 1, "dirt", 1);
 //        startingPointWithDestinationPointPair = TerrainGen.maze(missionSpec, 21, 50);
 
         missionSpec.observeGrid(-getDefaultObserveGridRadius(), -1, -getDefaultObserveGridRadius(), getDefaultObserveGridRadius(), -1, getDefaultObserveGridRadius(), getDefaultObserveGridName());

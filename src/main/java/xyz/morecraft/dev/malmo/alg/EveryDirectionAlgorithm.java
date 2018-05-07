@@ -86,33 +86,36 @@ public class EveryDirectionAlgorithm {
 
     static {
         someAlgorithmDirTransform = new LinkedHashMap<>();
-        someAlgorithmDirTransform.put(N, new int[]{0, -1});
-        someAlgorithmDirTransform.put(E, new int[]{1, 0});
-        someAlgorithmDirTransform.put(S, new int[]{0, 1});
-        someAlgorithmDirTransform.put(W, new int[]{-1, 0});
+        someAlgorithmDirTransform.put(S, new int[]{0, -1});
+        someAlgorithmDirTransform.put(W, new int[]{1, 0});
+        someAlgorithmDirTransform.put(N, new int[]{0, 1});
+        someAlgorithmDirTransform.put(E, new int[]{-1, 0});
     }
 
     public static void main(String[] args) {
         final GridVisualizer gridVisualizer = new GridVisualizer(true, true);
         final String[][] rawGrid = {
                 {BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE},
-                {BLOCK_STONE, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_STONE},
-                {BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_DIRT, BLOCK_STONE},
+                {BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_DIRT, BLOCK_DIRT},
+                {BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE},
                 {BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT},
                 {BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE}
         };
         final boolean[][] grid = SimpleWalker.toBooleanGrid(rawGrid, rawGrid.length);
         gridVisualizer.updateGrid(rawGrid);
-        final double angle = WayUtils.getAngle(rawGrid.length / 2, rawGrid.length / 2, rawGrid.length / 2, rawGrid.length - 1);
+//        final double angle = WayUtils.getCorrectedAngle(rawGrid.length / 2, rawGrid.length / 2, rawGrid.length / 2, rawGrid.length - 1);
+        final double angle = 108;
+        System.out.println(((int) angle) + "°");
         gridVisualizer.drawAngle(angle);
         final IntPoint3D intersectionPoint = SimpleWalkerB1.getIntersectionPoint(angle, grid);
+//        final IntPoint3D intersectionPoint = new IntPoint3D(1, 0, 0);
         System.out.println(intersectionPoint);
         final long startTime = System.nanoTime();
         final EveryDirectionAlgorithm everyDirectionAlgorithm = new EveryDirectionAlgorithm(intersectionPoint.iX(), intersectionPoint.iY());
         final Pair<List<IntPoint3D>, List<CardinalDirection>> cardinalDirections = everyDirectionAlgorithm.calculate(grid);
         final long endTime = System.nanoTime();
-        System.out.println(cardinalDirections);
-        System.out.println(TimeUnit.NANOSECONDS.toMillis(endTime - startTime));
+        System.out.println(cardinalDirections.getValue());
+        System.out.println("time=" + TimeUnit.NANOSECONDS.toMillis(endTime - startTime) + "ms");
     }
 
 }

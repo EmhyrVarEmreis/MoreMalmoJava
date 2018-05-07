@@ -47,6 +47,11 @@ public class WorldObservation {
         );
     }
 
+    public IntPoint3D getCorrectedPos() {
+        final IntPoint3D point = getPos();
+        return new IntPoint3D(-1 * point.z, point.y, point.x);
+    }
+
     public boolean isAlive() {
         return (boolean) map.get("IsAlive");
     }

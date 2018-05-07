@@ -53,6 +53,11 @@ public abstract class Mission<Record> {
         throw new NotImplementedException();
     }
 
+    public IntPoint3D getCorrectedDestinationPoint() {
+        final IntPoint3D point = getDestinationPoint().clone();
+        return new IntPoint3D(-1 * point.z, point.y, point.x);
+    }
+
     protected abstract AgentHost initAgentHost();
 
     protected abstract MissionSpec initMissionSpec();

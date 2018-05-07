@@ -22,6 +22,10 @@ public class WayUtils {
         return angle;
     }
 
+    public static double getCorrectedAngle(double x1, double z1, double x2, double z2) {
+        return (getAngle(x1, z1, x2, z2) + 90) % 360;
+    }
+
     public static CardinalDirection getOppositeSimpleDimension(final CardinalDirection dim) {
         if (dim == N) {
             return S;

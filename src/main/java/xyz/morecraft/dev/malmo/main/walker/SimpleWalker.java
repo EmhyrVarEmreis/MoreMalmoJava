@@ -66,19 +66,19 @@ public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implemen
 
     private void sendContinuousCommands(final AgentHost agentHost, final CardinalDirection goDirection) {
         switch (goDirection) {
-            case N:
+            case S:
                 agentHost.sendCommand("move " + speedMove);
                 agentHost.sendCommand("strafe 0");
                 break;
-            case E:
+            case W:
                 agentHost.sendCommand("move 0");
                 agentHost.sendCommand("strafe " + speedStrafe);
                 break;
-            case S:
+            case N:
                 agentHost.sendCommand("move -" + speedMove);
                 agentHost.sendCommand("strafe 0");
                 break;
-            case W:
+            case E:
                 agentHost.sendCommand("move 0");
                 agentHost.sendCommand("strafe -" + speedStrafe);
                 break;

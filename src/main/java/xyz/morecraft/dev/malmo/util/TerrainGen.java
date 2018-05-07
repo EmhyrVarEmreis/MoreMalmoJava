@@ -52,6 +52,7 @@ public class TerrainGen {
                         for (int i = 0; i < xx; i++) {
                             drawer.accept(x, z);
                             x++;
+                            x++;
                         }
                     }
                     x++;

@@ -125,27 +125,27 @@ public class GridVisualizer extends JFrame {
 
             g2d.setColor(Color.GREEN);
 
-            final int dirStep = step / 3;
-            g2d.drawString("N", middle - 2, middle - dirStep + 3);
-            g2d.drawString("E", middle + dirStep - 2, middle + 2);
-            g2d.drawString("S", middle - 2, middle + dirStep + 3);
-            g2d.drawString("W", middle - dirStep - 2, middle + 2);
-
             int ovalWidth = step / 5;
             //noinspection SuspiciousNameCombination
-            g2d.fillOval(margin + ((n / 2) * step) + ovalWidth * 2, margin + ((n / 2) * step) + ovalWidth * 2, ovalWidth, ovalWidth);
+            g2d.fillOval(middle - ovalWidth / 2, middle - ovalWidth / 2, ovalWidth, ovalWidth);
 
             if (angle >= 0) {
-                double newAngle = Math.abs(360 - angle);
-                newAngle += 270;
-                newAngle = newAngle % 360;
+                double newAngle = (Math.abs(360 - angle) + 270) % 360;
                 newAngle = Math.toRadians(newAngle);
                 int angleWidth = (dim / 2) - margin;
                 int endX = (int) (middle + angleWidth * Math.sin(newAngle));
                 int endY = (int) (middle + angleWidth * Math.cos(newAngle));
-                g2d.setColor(Color.GREEN);
+                g2d.setColor(Color.BLUE);
                 g2d.drawLine(middle, middle, endX, endY);
             }
+
+            g2d.setColor(Color.GREEN);
+
+            final int dirStep = step / 3;
+            g2d.drawString("S", middle - 2, middle - dirStep + 3);
+            g2d.drawString("W", middle + dirStep - 4, middle + 3);
+            g2d.drawString("N", middle - 2, middle + dirStep + 3);
+            g2d.drawString("E", middle - dirStep - 4, middle + 3);
 
         }
 

@@ -110,7 +110,7 @@
         <dependency>
             <groupId>com.microsoft.msr</groupId>
             <artifactId>malmo-jar</artifactId>
-            <version>0.31.0</version>
+            <version>0.34.0</version>
         </dependency>
 
     </dependencies>
@@ -124,10 +124,9 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <fork>true</fork>
                     <compilerArgs>
                         <!--<arg>-verbose</arg>-->
-                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                        <!--<arg>-J&#45;&#45;add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>-->
                         <arg>-Xlint:all,-options,-path</arg>
                     </compilerArgs>
                 </configuration>
