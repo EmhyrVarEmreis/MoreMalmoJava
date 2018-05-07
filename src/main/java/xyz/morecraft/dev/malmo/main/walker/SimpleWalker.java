@@ -22,7 +22,11 @@ public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implemen
     private boolean isContinuous;
 
     public SimpleWalker() {
-        this.isContinuous = true;
+        this(true);
+    }
+
+    public SimpleWalker(boolean isContinuous) {
+        this.isContinuous = isContinuous;
     }
 
     @Override
@@ -32,7 +36,10 @@ public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implemen
 
     @Override
     public void prepare(T mission) {
+        mission.setDefaultObserveGridRadius(getDefaultObserveGridRadius());
     }
+
+    protected abstract int getDefaultObserveGridRadius();
 
     @Override
     public WorldState step(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation, T mission) {
@@ -112,7 +119,7 @@ public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implemen
      */
     public abstract CardinalDirection calculateNextStep(final WorldObservation worldObservation, MissionWithObserveGrid<?> mission);
 
-    protected static boolean[][] toBooleanGrid(final String[][] rawGrid, int r) {
+    public static boolean[][] toBooleanGrid(final String[][] rawGrid, int r) {
         final boolean[][] b = new boolean[r][r];
         for (int i = 0; i < r; i++) {
             for (int j = 0; j < r; j++) {

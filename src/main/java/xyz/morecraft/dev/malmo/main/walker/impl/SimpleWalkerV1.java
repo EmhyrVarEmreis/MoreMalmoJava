@@ -24,6 +24,11 @@ public class SimpleWalkerV1<T extends MissionWithObserveGrid<?>> extends SimpleW
     }
 
     @Override
+    protected int getDefaultObserveGridRadius() {
+        return 1;
+    }
+
+    @Override
     public CardinalDirection calculateNextStep(final WorldObservation worldObservation, MissionWithObserveGrid<?> mission) {
         final String[][][] rawRawGrid = mission.getZeroGrid(worldObservation);
         final String[][] rawGrid = WayUtils.revertGrid(rawRawGrid[0], mission.getDefaultObserveGridWidth());

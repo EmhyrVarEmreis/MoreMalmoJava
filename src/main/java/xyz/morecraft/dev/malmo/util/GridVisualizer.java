@@ -126,10 +126,10 @@ public class GridVisualizer extends JFrame {
             g2d.setColor(Color.GREEN);
 
             final int dirStep = step / 3;
-            g2d.drawString("0", middle - 2, middle - dirStep + 3);
-            g2d.drawString("1", middle + dirStep - 2, middle + 2);
-            g2d.drawString("2", middle - 2, middle + dirStep + 3);
-            g2d.drawString("3", middle - dirStep - 2, middle + 2);
+            g2d.drawString("N", middle - 2, middle - dirStep + 3);
+            g2d.drawString("E", middle + dirStep - 2, middle + 2);
+            g2d.drawString("S", middle - 2, middle + dirStep + 3);
+            g2d.drawString("W", middle - dirStep - 2, middle + 2);
 
             int ovalWidth = step / 5;
             //noinspection SuspiciousNameCombination

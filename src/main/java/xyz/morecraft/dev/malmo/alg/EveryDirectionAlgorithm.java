@@ -1,13 +1,18 @@
 package xyz.morecraft.dev.malmo.alg;
 
 import org.apache.commons.lang3.tuple.Pair;
+import xyz.morecraft.dev.malmo.main.walker.SimpleWalker;
+import xyz.morecraft.dev.malmo.main.walker.impl.SimpleWalkerB1;
 import xyz.morecraft.dev.malmo.util.CardinalDirection;
+import xyz.morecraft.dev.malmo.util.GridVisualizer;
 import xyz.morecraft.dev.malmo.util.IntPoint3D;
 import xyz.morecraft.dev.malmo.util.WayUtils;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static xyz.morecraft.dev.malmo.util.Blocks.BLOCK_DIRT;
+import static xyz.morecraft.dev.malmo.util.Blocks.BLOCK_STONE;
 import static xyz.morecraft.dev.malmo.util.CardinalDirection.*;
 
 public class EveryDirectionAlgorithm {
@@ -47,7 +52,12 @@ public class EveryDirectionAlgorithm {
         if (traces.isEmpty()) {
             return null;
         } else {
-            return traces.first();
+            final Pair<List<IntPoint3D>, List<CardinalDirection>> firstTrace = traces.first();
+            if (firstTrace.getKey().size() > 1) {
+                firstTrace.getKey().remove(0);
+                firstTrace.getValue().remove(0);
+            }
+            return firstTrace;
         }
     }
 
@@ -83,17 +93,22 @@ public class EveryDirectionAlgorithm {
     }
 
     public static void main(String[] args) {
-        final boolean[][] grid = {
-                {true, true, true, true, true, true, true},
-                {true, true, true, true, true, true, true},
-                {true, true, true, true, true, true, true},
-                {true, true, true, true, true, true, true},
-                {true, true, true, true, true, true, true},
-                {true, true, true, true, true, true, true},
-                {true, true, true, true, true, true, true}
+        final GridVisualizer gridVisualizer = new GridVisualizer(true, true);
+        final String[][] rawGrid = {
+                {BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE},
+                {BLOCK_STONE, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_STONE},
+                {BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_DIRT, BLOCK_STONE},
+                {BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT},
+                {BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE}
         };
+        final boolean[][] grid = SimpleWalker.toBooleanGrid(rawGrid, rawGrid.length);
+        gridVisualizer.updateGrid(rawGrid);
+        final double angle = WayUtils.getAngle(rawGrid.length / 2, rawGrid.length / 2, rawGrid.length / 2, rawGrid.length - 1);
+        gridVisualizer.drawAngle(angle);
+        final IntPoint3D intersectionPoint = SimpleWalkerB1.getIntersectionPoint(angle, grid);
+        System.out.println(intersectionPoint);
         final long startTime = System.nanoTime();
-        final EveryDirectionAlgorithm everyDirectionAlgorithm = new EveryDirectionAlgorithm(0, 0);
+        final EveryDirectionAlgorithm everyDirectionAlgorithm = new EveryDirectionAlgorithm(intersectionPoint.iX(), intersectionPoint.iY());
         final Pair<List<IntPoint3D>, List<CardinalDirection>> cardinalDirections = everyDirectionAlgorithm.calculate(grid);
         final long endTime = System.nanoTime();
         System.out.println(cardinalDirections);

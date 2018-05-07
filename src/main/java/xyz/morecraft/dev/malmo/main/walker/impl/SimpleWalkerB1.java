@@ -12,9 +12,18 @@ import xyz.morecraft.dev.malmo.util.WorldObservation;
 @Slf4j
 public class SimpleWalkerB1<T extends MissionWithObserveGrid<?>> extends SimpleWalker<T> {
 
+    public SimpleWalkerB1() {
+        super(false);
+    }
+
     @Override
     public int stepInterval() {
-        return 20;
+        return 500;
+    }
+
+    @Override
+    protected int getDefaultObserveGridRadius() {
+        return 2;
     }
 
     @Override
@@ -32,7 +41,9 @@ public class SimpleWalkerB1<T extends MissionWithObserveGrid<?>> extends SimpleW
 
         gridVisualizer.drawAngle(angle);
 
-        final EveryDirectionAlgorithm everyDirectionAlgorithm = new EveryDirectionAlgorithm(0, 0);
+        final IntPoint3D intersectionPoint = getIntersectionPoint(angle, grid);
+
+        final EveryDirectionAlgorithm everyDirectionAlgorithm = new EveryDirectionAlgorithm(intersectionPoint.iX(), intersectionPoint.iY());
         final CardinalDirection goDirection = everyDirectionAlgorithm.calculate(grid).getValue().get(0);
 
         log.info("goDirection={}", goDirection);
@@ -40,6 +51,42 @@ public class SimpleWalkerB1<T extends MissionWithObserveGrid<?>> extends SimpleW
         gridVisualizer.drawDir(goDirection);
 
         return goDirection;
+    }
+
+    public static IntPoint3D getIntersectionPoint(double angle, boolean[][] grid) {
+        // Very, very dummy method
+        int centerX = grid[0].length / 2;
+        int centerY = grid.length / 2;
+        int x = centerX;
+        int y = centerY;
+        double localDiff;
+        double tmpDiff = Double.MAX_VALUE;
+        for (int j = 0; j < grid[0].length; j++) {
+            for (int i = 0; i < grid.length; i++) {
+                if (i == 0 || i == (grid.length - 1) || j == 0 || j == (grid[0].length - 1)) {
+                    double newAngle = (WayUtils.getAngle(centerX, centerY, j, i) + 90) % 360;
+                    localDiff = Math.abs(newAngle - angle);
+                    if (localDiff <= tmpDiff) {
+                        tmpDiff = localDiff;
+                        y = i;
+                        x = j;
+                    }
+                }
+            }
+        }
+        return new IntPoint3D(x, y, 0);
+    }
+
+    public static void main(String[] args) {
+        final boolean[][] grid = {
+                {true, true, true},
+                {true, true, true},
+                {true, true, true}
+        };
+        final double[] angleList = {0, 45, 90, 135, 180, 225, 270, 315};
+        for (double angle : angleList) {
+            System.out.println(String.format("%3.0f", angle) + "\t" + getIntersectionPoint(angle, grid));
+        }
     }
 
 }

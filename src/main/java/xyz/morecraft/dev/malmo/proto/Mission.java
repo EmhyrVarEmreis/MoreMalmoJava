@@ -34,6 +34,8 @@ public abstract class Mission<Record> {
     private MissionRecordSpec missionRecordSpec;
     @Getter
     private List<Record> recordList;
+    @Getter
+    private boolean isRunning;
 
     private long[] times;
 
@@ -90,6 +92,7 @@ public abstract class Mission<Record> {
 
     private <T extends Mission<Record>> void run(MissionRunnerWrapper missionRunnerWrapper) throws Exception {
         log.info("Waiting for the mission to start");
+        this.isRunning = true;
         times[0] = System.nanoTime();
 
         agentHost = initAgentHost();
@@ -159,6 +162,7 @@ public abstract class Mission<Record> {
 
         times[3] = System.nanoTime();
 
+        this.isRunning = false;
         log.info("Mission has stopped; fullTime={}s, preparingTime={}s, runningTime={}s, finishingTime={}s", getDT(times[0], times[3]), getDT(times[0], times[1]), getDT(times[1], times[2]), getDT(times[2], times[3]));
         System.exit(0);
     }

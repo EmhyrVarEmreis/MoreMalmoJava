@@ -20,7 +20,6 @@ import java.util.function.Supplier;
 @Slf4j
 public class SimpleTransverseObstaclesMissionMain {
 
-
     public static void main(String[] args) throws Exception {
         Util.ensureMalmoXsdPath();
         Util.loadMalmoLib();
