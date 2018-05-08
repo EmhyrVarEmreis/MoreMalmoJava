@@ -82,8 +82,9 @@ public abstract class Mission<Record> {
         @SuppressWarnings("unchecked") final T thiss = (T) this;
         missionRunner.prepare(thiss);
         run((agentHost, worldState, worldObservation) -> {
+            final WorldState tmpState = missionRunner.step(agentHost, worldState, worldObservation, thiss);
             Thread.sleep(missionRunner.stepInterval());
-            return missionRunner.step(agentHost, worldState, worldObservation, thiss);
+            return tmpState;
         });
     }
 

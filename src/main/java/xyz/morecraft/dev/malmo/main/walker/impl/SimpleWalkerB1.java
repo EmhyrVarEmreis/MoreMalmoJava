@@ -21,7 +21,7 @@ public class SimpleWalkerB1<T extends MissionWithObserveGrid<?>> extends SimpleW
 
     @Override
     public int stepInterval() {
-        return 250;
+        return 100;
     }
 
     @Override
