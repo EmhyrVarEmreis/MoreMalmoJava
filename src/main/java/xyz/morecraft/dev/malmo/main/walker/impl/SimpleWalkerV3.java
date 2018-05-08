@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import static xyz.morecraft.dev.malmo.util.CardinalDirection.N;
+import static xyz.morecraft.dev.malmo.util.CardinalDirection.S;
 
 @Slf4j
 public class SimpleWalkerV3 extends SimpleWalkerV2 {
@@ -29,12 +29,12 @@ public class SimpleWalkerV3 extends SimpleWalkerV2 {
         final boolean samePositionLast = Objects.nonNull(peekLast) && Objects.equals(roundedCurrentPoint, peekLast.getLeft());
         if (samePosition) {
             final int[] p = data.transform[0];
-            final boolean canGoNorth = data.grid[p[0]][p[1]];
-            final CardinalDirection newDir = canGoNorth ? N : WayUtils.getOppositeSimpleDimension(data.goDirection);
+            final boolean canGoSouth = data.grid[p[0]][p[1]];
+            final CardinalDirection newDir = canGoSouth ? S : WayUtils.getOppositeSimpleDimension(data.goDirection);
             final int[] pp = data.transform[newDir.ordinal()];
             final boolean canGo = data.grid[pp[0]][pp[1]];
             if (canGo) {
-                log.info("Adjusting goDirection from {} to {} (canGoNorth={})", data.goDirection, newDir, canGoNorth);
+                log.info("Adjusting goDirection from {} to {} (canGoSouth={})", data.goDirection, newDir, canGoSouth);
                 data.goDirection = newDir;
             }
         }

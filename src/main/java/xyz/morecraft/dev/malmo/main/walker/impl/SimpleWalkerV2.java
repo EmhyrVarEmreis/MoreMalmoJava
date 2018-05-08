@@ -34,9 +34,9 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
     }
 
     private CardinalDirection isTouchingEdges(final CardinalDirection goDirection, final IntPoint3D currentPoint, final int[][] transform, final boolean[][] grid) {
-        if ((goDirection == N || goDirection == S) && canTouchEdge(goDirection, transform, grid)) {
+        if ((goDirection == S || goDirection == N) && canTouchEdge(goDirection, transform, grid)) {
             return isTouchingEdgesX(currentPoint);
-        } else if ((goDirection == E || goDirection == W) && canTouchEdge(goDirection, transform, grid)) {
+        } else if ((goDirection == W || goDirection == E) && canTouchEdge(goDirection, transform, grid)) {
             return isTouchingEdgesZ(currentPoint);
         } else {
             return null;
@@ -48,7 +48,7 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
         final int[] p1 = Arrays.copyOf(transform[(goDirOrdinal + 1) % 4], 2);
         final int[] p2 = Arrays.copyOf(transform[(goDirOrdinal + 3) % 4], 2);
         final int index = goDirOrdinal % 2;
-        final int adjustment = (goDirection == E || goDirection == S) ? 1 : -1;
+        final int adjustment = (goDirection == W || goDirection == N) ? 1 : -1;
         p1[index] = p1[index] + adjustment;
         p2[index] = p2[index] + adjustment;
         return !grid[p1[0]][p1[1]] || !grid[p2[0]][p2[1]];
@@ -57,17 +57,17 @@ public class SimpleWalkerV2 extends SimpleWalkerV1 {
     private CardinalDirection isTouchingEdgesX(final IntPoint3D currentPoint) {
         final double xx = Math.abs(currentPoint.x % 1);
         final double xTol = PLAYER_WIDTH / 2;
-        return checkIfTouchingAndGetDir(xx, xTol, W, E);
+        return checkIfTouchingAndGetDir(xx, xTol, E, W);
     }
 
     private CardinalDirection isTouchingEdgesZ(final IntPoint3D currentPoint) {
         final double zz = Math.abs(currentPoint.z % 1);
         final double zTol = PLAYER_DEPTH / 2;
-        return checkIfTouchingAndGetDir(zz, zTol, N, S);
+        return checkIfTouchingAndGetDir(zz, zTol, S, N);
     }
 
     private CardinalDirection checkIfTouchingAndGetDir(double value, double tolerance, CardinalDirection w, CardinalDirection e) {
-        if ((1 - value) <= tolerance) {
+        if ((1 - value) < tolerance) {
             return w;
         } else if (value <= tolerance && value != 0) {
             return e;
