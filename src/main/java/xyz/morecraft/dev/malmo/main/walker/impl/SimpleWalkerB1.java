@@ -2,7 +2,8 @@ package xyz.morecraft.dev.malmo.main.walker.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import xyz.morecraft.dev.malmo.alg.EveryDirectionAlgorithm;
+import xyz.morecraft.dev.malmo.alg.Algorithm2D;
+import xyz.morecraft.dev.malmo.alg.EveryDirectionAlgorithm2D;
 import xyz.morecraft.dev.malmo.main.walker.SimpleWalker;
 import xyz.morecraft.dev.malmo.proto.MissionWithObserveGrid;
 import xyz.morecraft.dev.malmo.util.CardinalDirection;
@@ -46,8 +47,8 @@ public class SimpleWalkerB1<T extends MissionWithObserveGrid<?>> extends SimpleW
 
         final IntPoint3D intersectionPoint = getIntersectionPoint(angle, grid);
 
-        final EveryDirectionAlgorithm everyDirectionAlgorithm = new EveryDirectionAlgorithm(intersectionPoint.iX(), intersectionPoint.iY());
-        final Pair<List<IntPoint3D>, List<CardinalDirection>> trace = everyDirectionAlgorithm.calculate(grid);
+        final Algorithm2D algorithm = getAlgorithm(intersectionPoint);
+        final Pair<List<IntPoint3D>, List<CardinalDirection>> trace = algorithm.calculate(grid);
         final CardinalDirection goDirection = trace.getValue().get(0);
 
         log.info("goDirection={}, currentPoint={}, destinationPoint={}, angle={}, intersectionPoint={}, trace={}", goDirection, currentPoint, destinationPoint, angle, intersectionPoint, trace.getValue());
@@ -62,6 +63,10 @@ public class SimpleWalkerB1<T extends MissionWithObserveGrid<?>> extends SimpleW
         gridVisualizer.drawDir(goDirection);
 
         return goDirection;
+    }
+
+    protected Algorithm2D getAlgorithm(IntPoint3D intersectionPoint) {
+        return new EveryDirectionAlgorithm2D(intersectionPoint.iX(), intersectionPoint.iY());
     }
 
     private static final double[][] angles = new double[5][5];

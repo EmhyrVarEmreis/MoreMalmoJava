@@ -1,11 +1,12 @@
 package xyz.morecraft.dev.malmo.util;
 
+import com.sun.istack.internal.NotNull;
 import lombok.ToString;
 
 import java.util.Objects;
 
 @ToString
-public class IntPoint3D {
+public class IntPoint3D implements Comparable<IntPoint3D> {
 
     public Double x, y, z;
 
@@ -94,6 +95,29 @@ public class IntPoint3D {
     @Override
     public IntPoint3D clone() {
         return new IntPoint3D(x, y, z);
+    }
+
+    @SuppressWarnings("NullableProblems")
+    @Override
+    public int compareTo(@NotNull IntPoint3D o) {
+        if (o == this) {
+            return 0;
+        }
+        if (Objects.isNull(o)) {
+            return -1;
+        }
+        int cmp = x.compareTo(o.x);
+        if (cmp == 0) {
+            cmp = y.compareTo(o.y);
+        } else {
+            return cmp;
+        }
+        if (cmp == 0) {
+            cmp = z.compareTo(o.z);
+        } else {
+            return cmp;
+        }
+        return cmp;
     }
 
 }

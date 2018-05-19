@@ -1,8 +1,13 @@
 package xyz.morecraft.dev.malmo.util;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import static xyz.morecraft.dev.malmo.util.CardinalDirection.*;
 
 public class WayUtils {
+
+    public final static Map<CardinalDirection, int[]> CARDINAL_DIRECTION_TRANSLATE_MAP;
 
     public static String[][] revertGrid(String[][] oldGrid, int r) {
         final String[][] newGrid = new String[r][r];
@@ -38,6 +43,14 @@ public class WayUtils {
         } else {
             return dim;
         }
+    }
+
+    static {
+        CARDINAL_DIRECTION_TRANSLATE_MAP = new LinkedHashMap<>();
+        CARDINAL_DIRECTION_TRANSLATE_MAP.put(S, new int[]{0, -1});
+        CARDINAL_DIRECTION_TRANSLATE_MAP.put(W, new int[]{1, 0});
+        CARDINAL_DIRECTION_TRANSLATE_MAP.put(N, new int[]{0, 1});
+        CARDINAL_DIRECTION_TRANSLATE_MAP.put(E, new int[]{-1, 0});
     }
 
 }
