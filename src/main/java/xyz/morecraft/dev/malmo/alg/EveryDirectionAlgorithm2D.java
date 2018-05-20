@@ -2,11 +2,7 @@ package xyz.morecraft.dev.malmo.alg;
 
 import org.apache.commons.lang3.tuple.Pair;
 import xyz.morecraft.dev.malmo.main.walker.SimpleWalker;
-import xyz.morecraft.dev.malmo.main.walker.impl.SimpleWalkerB1;
-import xyz.morecraft.dev.malmo.util.CardinalDirection;
-import xyz.morecraft.dev.malmo.util.GridVisualizer;
-import xyz.morecraft.dev.malmo.util.IntPoint3D;
-import xyz.morecraft.dev.malmo.util.WayUtils;
+import xyz.morecraft.dev.malmo.util.*;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -100,7 +96,7 @@ public class EveryDirectionAlgorithm2D implements Algorithm2D {
         final double angle = 108;
         System.out.println(((int) angle) + "°");
         gridVisualizer.drawAngle(angle);
-        final IntPoint3D intersectionPoint = SimpleWalkerB1.getIntersectionPoint(angle, grid);
+        final IntPoint3D intersectionPoint = PointIntersection.getIntersectionPoint(angle, grid);
 //        final IntPoint3D intersectionPoint = new IntPoint3D(1, 0, 0);
         System.out.println(intersectionPoint);
         final long startTime = System.nanoTime();

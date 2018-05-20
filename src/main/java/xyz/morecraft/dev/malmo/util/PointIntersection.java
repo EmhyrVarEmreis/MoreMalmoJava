@@ -1,0 +1,123 @@
+package xyz.morecraft.dev.malmo.util;
+
+import java.util.*;
+
+public final class PointIntersection {
+
+    private static Map<AngleQuadruple, AngleQuadruple[]> angleQuadrupleMap;
+
+    public static IntPoint3D getIntersectionPoint(double angle, boolean[][] grid) {
+        int q = grid[0].length;
+        int w = grid.length;
+        AngleQuadruple[] angleQuadruples = getAngleQuadruples(q, w);
+        AngleQuadruple found = find(angle, angleQuadruples);
+        return new IntPoint3D(found.x, found.y, 0);
+    }
+
+    private synchronized static AngleQuadruple[] getAngleQuadruples(int q, int w) {
+        return angleQuadrupleMap.computeIfAbsent(new AngleQuadruple(q, w, 0, 0), angleQuadruple -> generateAngleQuadruples(angleQuadruple.x, angleQuadruple.y));
+    }
+
+    private static AngleQuadruple[] generateAngleQuadruples(int q, int w) {
+        int centerX = q / 2;
+        int centerY = w / 2;
+        int idx = 0;
+        double[][] tab0 = new double[w + 1][q + 1];
+        AngleQuadruple[] angleQuadruples = new AngleQuadruple[(w - 1) * 2 + (q - 1) * 2];
+        for (int i = 1; i < q; i++) {
+            tab0[0][i] = WayUtils.getAngle(centerX, centerY, i - 0.5, w + 0.5);
+            tab0[w][i] = WayUtils.getAngle(centerX, centerY, i - 0.5, 0 - 0.5);
+            if (i > 1) {
+                angleQuadruples[idx++] = new AngleQuadruple(i - 1, 0, tab0[0][i], tab0[0][i - 1]);
+                angleQuadruples[idx++] = new AngleQuadruple(i - 1, w - 1, tab0[w][i - 1], tab0[w][i]);
+            }
+        }
+        for (int i = 1; i < w; i++) {
+            tab0[w - i][0] = WayUtils.getAngle(centerX, centerY, 0 - 0.5, i - 0.5);
+            tab0[w - i][q] = WayUtils.getAngle(centerX, centerY, q + 0.5, i - 0.5);
+            if (i > 1) {
+                angleQuadruples[idx++] = new AngleQuadruple(0, i - 1, tab0[w - i][0], tab0[w - i + 1][0]);
+                angleQuadruples[idx++] = new AngleQuadruple(q - 1, i - 1, tab0[w - i + 1][q], tab0[w - i][q]);
+            }
+        }
+        angleQuadruples[idx++] = new AngleQuadruple(0, 0, tab0[0][1], tab0[1][0]);
+        angleQuadruples[idx++] = new AngleQuadruple(q - 1, 0, tab0[1][q], tab0[0][q - 1]);
+        angleQuadruples[idx++] = new AngleQuadruple(0, w - 1, tab0[w - 1][0], tab0[w][1]);
+        angleQuadruples[idx] = new AngleQuadruple(q - 1, w - 1, tab0[w][q - 1], tab0[w - 1][q]);
+        Arrays.sort(angleQuadruples, Comparator.comparingDouble(o -> ((o.a + o.b) / 2.0) % 360.0));
+        return angleQuadruples;
+    }
+
+    private static AngleQuadruple find(double angle, AngleQuadruple[] angleQuadruples) {
+        int start = (int) (1.0 * angle / 360 * angleQuadruples.length);
+        for (int j, i = 0; i < angleQuadruples.length / 2; i++) {
+            j = (start + i) % angleQuadruples.length;
+            if (angleQuadruples[j].a <= angle && angle < angleQuadruples[j].b) {
+                return angleQuadruples[j];
+            }
+            j = Math.abs((start - i) % angleQuadruples.length);
+            if (angleQuadruples[j].a <= angle && angle < angleQuadruples[j].b) {
+                return angleQuadruples[j];
+            }
+        }
+        return new AngleQuadruple(0, 0, 0, 0);
+    }
+
+    public static class AngleQuadruple {
+        final int x;
+        final int y;
+        final double a;
+        final double b;
+
+        public AngleQuadruple(int x, int y, double a, double b) {
+            this.x = x;
+            this.y = y;
+            this.a = a;
+            this.b = b;
+        }
+
+        @Override
+        public String toString() {
+            return "AngleQuadruple{" +
+                    "x=" + x +
+                    ", y=" + y +
+                    ", a=" + a +
+                    ", b=" + b +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AngleQuadruple that = (AngleQuadruple) o;
+            return x == that.x &&
+                    y == that.y;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
+        }
+
+    }
+
+    static {
+        angleQuadrupleMap = new HashMap<>();
+        for (int i = 3; i < 8; i++) {
+            for (int j = 3; j < 8; j++) {
+                getAngleQuadruples(i, j);
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        final boolean[][] grid = new boolean[5][5];
+//        final double[] angleList = {0, 45, 90, 135, 180, 225, 270, 315};
+        final double[] angleList = {45};
+        for (double angle : angleList) {
+            System.out.println(String.format("%3.0f", angle) + "\t" + getIntersectionPoint(angle, grid));
+        }
+    }
+
+}

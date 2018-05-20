@@ -1,27 +1,23 @@
 package xyz.morecraft.dev.malmo.alg;
 
 import org.apache.commons.lang3.tuple.Pair;
-import xyz.morecraft.dev.malmo.main.walker.SimpleWalker;
-import xyz.morecraft.dev.malmo.main.walker.impl.SimpleWalkerB1;
 import xyz.morecraft.dev.malmo.util.CardinalDirection;
-import xyz.morecraft.dev.malmo.util.GridVisualizer;
 import xyz.morecraft.dev.malmo.util.IntPoint3D;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
-import static xyz.morecraft.dev.malmo.util.Blocks.BLOCK_DIRT;
-import static xyz.morecraft.dev.malmo.util.Blocks.BLOCK_STONE;
 import static xyz.morecraft.dev.malmo.util.WayUtils.CARDINAL_DIRECTION_TRANSLATE_MAP;
 
-public class DijkstraAlgorithm2D implements Algorithm2D {
+public abstract class DijkstraAlgorithm2D implements Algorithm2D {
 
-    private IntPoint3D goal;
+    protected IntPoint3D goal;
 
     public DijkstraAlgorithm2D(final int goalX, final int goalY) {
         this.goal = new IntPoint3D(goalX, goalY, 0);
     }
+
+    protected abstract double getWeight(int x0, int y0, int x1, int y1);
 
     @Override
     public Pair<List<IntPoint3D>, List<CardinalDirection>> calculate(final boolean[][] grid) {
@@ -29,7 +25,6 @@ public class DijkstraAlgorithm2D implements Algorithm2D {
     }
 
     private Pair<List<IntPoint3D>, List<CardinalDirection>> calculate(final boolean[][] grid, final int startX, final int startY, final int goalX, final int goalY) {
-        final NavigableSet<Vertex> q = new TreeSet<>();
         // Create vertices
         final Vertex[][] pointGrid = new Vertex[grid.length][grid[0].length];
         final BiFunction<Integer, Integer, Vertex> getVertex = (i, j) -> {
@@ -40,10 +35,18 @@ public class DijkstraAlgorithm2D implements Algorithm2D {
                 return v;
             }
         };
+        // Init vertices
+        initVertices(grid, getVertex);
         // Init start & end
         final Vertex start = getVertex.apply(startY, startX);
         final Vertex end = getVertex.apply(goalY, goalX);
-        // Init vertices
+        // Real Dijkstra's algorithm
+        dijkstra(start, end);
+        // Get Output
+        return getOutput(end);
+    }
+
+    private void initVertices(boolean[][] grid, BiFunction<Integer, Integer, Vertex> getVertex) {
         for (int i = 0; i < grid.length; i++) {
             for (int j = 0; j < grid[i].length; j++) {
                 if (!grid[i][j]) {
@@ -55,100 +58,103 @@ public class DijkstraAlgorithm2D implements Algorithm2D {
                     final int k = i - transformValue[1];
                     final int l = j - transformValue[0];
                     if (k >= 0 && l >= 0 && k < grid.length && l < grid[i].length && grid[k][l]) {
-                        vertex.neighbours.put(getVertex.apply(k, l), dirTransform.getKey());
+                        final Vertex vTmp = getVertex.apply(k, l);
+                        vertex.neighbours.put(vTmp, new Vertex.VertexNeighbour(vTmp, dirTransform.getKey(), getWeight(j, i, l, k)));
                     }
                 }
             }
         }
-        // Real Dijkstra's algorithm
-        start.d = 0;
+    }
+
+    private void dijkstra(Vertex start, Vertex end) {
+        final NavigableSet<Vertex> q = new TreeSet<>();
+        start.distance = 0;
         q.add(start);
         while (!q.isEmpty()) {
             final Vertex u = q.pollFirst();
             if (Objects.isNull(u) || u.compareTo(end) == 0) {
                 continue;
             }
-            for (Vertex v : u.neighbours.keySet()) {
-                if (v.d > (v.d + 1)) {
-                    v.d = u.d + 1;
-                    v.previous = u;
-                    q.add(v);
+            for (Vertex.VertexNeighbour neighbour : u.neighbours.values()) {
+                if (neighbour.vertex.distance > (u.distance + neighbour.distance)) {
+                    neighbour.vertex.distance = u.distance + neighbour.distance;
+                    neighbour.vertex.previous = u;
+                    q.add(neighbour.vertex);
                 }
+
             }
         }
-        // Get Output
+    }
+
+    private Pair<List<IntPoint3D>, List<CardinalDirection>> getOutput(Vertex end) {
         List<IntPoint3D> outPoints = new ArrayList<>();
         List<CardinalDirection> outDirs = new ArrayList<>();
         Vertex v = end;
         do {
-            final CardinalDirection dir = v.neighbours.get(v.previous);
-            if (Objects.isNull(dir)) {
+            final Vertex.VertexNeighbour vertexNeighbour = v.neighbours.get(v.previous);
+            if (Objects.isNull(vertexNeighbour)) {
                 continue;
             }
-            outPoints.add(v.v);
-            outDirs.add(dir);
+            outPoints.add(v.point);
+            outDirs.add(vertexNeighbour.direction);
         } while (Objects.nonNull(v = v.previous));
         Collections.reverse(outPoints);
         Collections.reverse(outDirs);
         return Pair.of(outPoints, outDirs);
     }
 
-    public static void main(String[] args) {
-        final GridVisualizer gridVisualizer = new GridVisualizer(true, true);
-        final String[][] rawGrid = {
-                {BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE},
-                {BLOCK_STONE, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT},
-                {BLOCK_STONE, BLOCK_DIRT, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE},
-                {BLOCK_STONE, BLOCK_DIRT, BLOCK_DIRT, BLOCK_DIRT, BLOCK_STONE},
-                {BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE, BLOCK_STONE}
-        };
-        final boolean[][] grid = SimpleWalker.toBooleanGrid(rawGrid, rawGrid.length);
-        gridVisualizer.updateGrid(rawGrid);
-        final double angle = 108;
-        System.out.println(((int) angle) + "°");
-        gridVisualizer.drawAngle(angle);
-        final IntPoint3D intersectionPoint = SimpleWalkerB1.getIntersectionPoint(angle, grid);
-        System.out.println(intersectionPoint);
-        final long startTime = System.nanoTime();
-        DijkstraAlgorithm2D dijkstraAlgorithm = new DijkstraAlgorithm2D(intersectionPoint.iX(), intersectionPoint.iY());
-        System.out.println(dijkstraAlgorithm.calculate(grid).getValue());
-        final long endTime = System.nanoTime();
-        System.out.println("time=" + TimeUnit.NANOSECONDS.toMillis(endTime - startTime) + "ms");
-    }
-
-
     private static class Vertex implements Comparable<Vertex> {
-        private final IntPoint3D v;
-        private int d = Integer.MAX_VALUE; // MAX_VALUE assumed to be infinity
-        private Vertex previous = null;
-        private final Map<Vertex, CardinalDirection> neighbours = new HashMap<>();
 
-        private Vertex(IntPoint3D v) {
-            this.v = v;
+        private final IntPoint3D point;
+        private final Map<Vertex, VertexNeighbour> neighbours = new HashMap<>();
+        private double distance = Integer.MAX_VALUE;
+        private Vertex previous = null;
+
+        private Vertex(IntPoint3D point) {
+            this.point = point;
         }
 
         @Override
         public int hashCode() {
-            return v.hashCode();
+            return point.hashCode();
         }
 
         @SuppressWarnings("NullableProblems")
         @Override
         public int compareTo(Vertex other) {
-            if (d == other.d) {
-                return v.compareTo(other.v);
+            if (distance == other.distance) {
+                return point.compareTo(other.point);
             }
-            return Integer.compare(d, other.d);
+            return Double.compare(distance, other.distance);
         }
 
         @Override
         public String toString() {
             return "Vertex{" +
-                    "v=" + v +
-                    ", d=" + d +
+                    "point=" + point +
+                    ", distance=" + distance +
                     '}';
         }
-    }
 
+        private static class VertexNeighbour {
+
+            private final Vertex vertex;
+            private final CardinalDirection direction;
+            private final double distance;
+
+            private VertexNeighbour(Vertex vertex, CardinalDirection direction, double distance) {
+                this.vertex = vertex;
+                this.direction = direction;
+                this.distance = distance;
+            }
+
+            @Override
+            public int hashCode() {
+                return vertex.hashCode();
+            }
+
+        }
+
+    }
 
 }

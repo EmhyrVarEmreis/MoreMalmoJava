@@ -6,10 +6,7 @@ import xyz.morecraft.dev.malmo.alg.Algorithm2D;
 import xyz.morecraft.dev.malmo.alg.EveryDirectionAlgorithm2D;
 import xyz.morecraft.dev.malmo.main.walker.SimpleWalker;
 import xyz.morecraft.dev.malmo.proto.MissionWithObserveGrid;
-import xyz.morecraft.dev.malmo.util.CardinalDirection;
-import xyz.morecraft.dev.malmo.util.IntPoint3D;
-import xyz.morecraft.dev.malmo.util.WayUtils;
-import xyz.morecraft.dev.malmo.util.WorldObservation;
+import xyz.morecraft.dev.malmo.util.*;
 
 import java.util.List;
 
@@ -45,9 +42,9 @@ public class SimpleWalkerB1<T extends MissionWithObserveGrid<?>> extends SimpleW
 
         gridVisualizer.drawAngle(angle);
 
-        final IntPoint3D intersectionPoint = getIntersectionPoint(angle, grid);
+        final IntPoint3D intersectionPoint = PointIntersection.getIntersectionPoint(angle, grid);
 
-        final Algorithm2D algorithm = getAlgorithm(intersectionPoint);
+        final Algorithm2D algorithm = getAlgorithm(intersectionPoint, angle);
         final Pair<List<IntPoint3D>, List<CardinalDirection>> trace = algorithm.calculate(grid);
         final CardinalDirection goDirection = trace.getValue().get(0);
 
@@ -65,53 +62,8 @@ public class SimpleWalkerB1<T extends MissionWithObserveGrid<?>> extends SimpleW
         return goDirection;
     }
 
-    protected Algorithm2D getAlgorithm(IntPoint3D intersectionPoint) {
+    protected Algorithm2D getAlgorithm(IntPoint3D intersectionPoint, double angle) {
         return new EveryDirectionAlgorithm2D(intersectionPoint.iX(), intersectionPoint.iY());
-    }
-
-    private static final double[][] angles = new double[5][5];
-
-    public static IntPoint3D getIntersectionPoint(double angle, boolean[][] grid) {
-        // Very, very dummy method
-        int centerX = grid[0].length / 2;
-        int centerY = grid.length / 2;
-        int x = centerX;
-        int y = centerY;
-        double localDiff;
-        double tmpDiff = Double.MAX_VALUE;
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[i].length; j++) {
-                if (i == 0 || i == (grid.length - 1) || j == 0 || j == (grid[0].length - 1)) {
-                    double newAngle = (WayUtils.getAngle(centerX, centerY, j, i) + 180) % 360;
-//                    System.out.println(j + " " + i + " " + String.format("%3.0f", newAngle) + " " + grid[i][j]);
-                    angles[i][j] = newAngle;
-                    localDiff = Math.abs(newAngle - angle);
-                    if (localDiff <= tmpDiff) {
-                        tmpDiff = localDiff;
-                        y = i;
-                        x = j;
-                    }
-                }
-            }
-        }
-        return new IntPoint3D(x, y, 0);
-    }
-
-    public static void main(String[] args) {
-        final boolean[][] grid = new boolean[5][5];
-//        final double[] angleList = {0, 45, 90, 135, 180, 225, 270, 315};
-        final double[] angleList = {117};
-        System.out.println();
-        for (double angle : angleList) {
-            System.out.println(String.format("%3.0f", angle) + "\t" + getIntersectionPoint(angle, grid));
-        }
-        System.out.println();
-        for (double[] aa : angles) {
-            for (double a : aa) {
-                System.out.print(String.format("%3.0f", a) + " ");
-            }
-            System.out.println();
-        }
     }
 
 }
