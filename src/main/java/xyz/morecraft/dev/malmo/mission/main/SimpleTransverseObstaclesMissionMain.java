@@ -33,8 +33,9 @@ public class SimpleTransverseObstaclesMissionMain {
         map.put(5, SimpleWalkerV3::new);
         map.put(6, SimpleWalkerB1::new);
         map.put(7, SimpleWalkerB2::new);
+        map.put(8, SimpleWalkerB3::new);
 
-        new SimpleTransverseObstaclesMission(args, 1).run(map.get(7).get());
+        new SimpleTransverseObstaclesMission(args, 1).run(map.get(8).get());
     }
 
 }

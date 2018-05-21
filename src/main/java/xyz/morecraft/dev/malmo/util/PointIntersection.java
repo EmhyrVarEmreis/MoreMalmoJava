@@ -23,18 +23,18 @@ public final class PointIntersection {
         int centerY = w / 2;
         int idx = 0;
         double[][] tab0 = new double[w + 1][q + 1];
-        AngleQuadruple[] angleQuadruples = new AngleQuadruple[(w - 1) * 2 + (q - 1) * 2];
+        AngleQuadruple[] angleQuadruples = new AngleQuadruple[(w - 1) * 2 + (q - 1) * 2 + 1];
         for (int i = 1; i < q; i++) {
-            tab0[0][i] = WayUtils.getAngle(centerX, centerY, i - 0.5, w + 0.5);
-            tab0[w][i] = WayUtils.getAngle(centerX, centerY, i - 0.5, 0 - 0.5);
+            tab0[0][i] = WayUtils.getCorrectedAngle(centerX, centerY, w + 0.5, i - 0.5);
+            tab0[w][i] = WayUtils.getCorrectedAngle(centerX, centerY, 0 - 0., i - 0.55);
             if (i > 1) {
                 angleQuadruples[idx++] = new AngleQuadruple(i - 1, 0, tab0[0][i], tab0[0][i - 1]);
                 angleQuadruples[idx++] = new AngleQuadruple(i - 1, w - 1, tab0[w][i - 1], tab0[w][i]);
             }
         }
         for (int i = 1; i < w; i++) {
-            tab0[w - i][0] = WayUtils.getAngle(centerX, centerY, 0 - 0.5, i - 0.5);
-            tab0[w - i][q] = WayUtils.getAngle(centerX, centerY, q + 0.5, i - 0.5);
+            tab0[w - i][0] = WayUtils.getCorrectedAngle(centerX, centerY, i - 0.5, 0 - 0.5);
+            tab0[w - i][q] = WayUtils.getCorrectedAngle(centerX, centerY, i - 0.5, q + 0.5);
             if (i > 1) {
                 angleQuadruples[idx++] = new AngleQuadruple(0, i - 1, tab0[w - i][0], tab0[w - i + 1][0]);
                 angleQuadruples[idx++] = new AngleQuadruple(q - 1, i - 1, tab0[w - i + 1][q], tab0[w - i][q]);
@@ -43,7 +43,15 @@ public final class PointIntersection {
         angleQuadruples[idx++] = new AngleQuadruple(0, 0, tab0[0][1], tab0[1][0]);
         angleQuadruples[idx++] = new AngleQuadruple(q - 1, 0, tab0[1][q], tab0[0][q - 1]);
         angleQuadruples[idx++] = new AngleQuadruple(0, w - 1, tab0[w - 1][0], tab0[w][1]);
-        angleQuadruples[idx] = new AngleQuadruple(q - 1, w - 1, tab0[w][q - 1], tab0[w - 1][q]);
+        angleQuadruples[idx++] = new AngleQuadruple(q - 1, w - 1, tab0[w][q - 1], tab0[w - 1][q]);
+        int angleQuadrupleMinIdx = 0;
+        for (int i = 0; i < angleQuadruples.length - 1; i++) {
+            if (angleQuadruples[i].a < angleQuadruples[angleQuadrupleMinIdx].a) {
+                angleQuadrupleMinIdx = i;
+            }
+        }
+        angleQuadruples[idx] = new AngleQuadruple(angleQuadruples[angleQuadrupleMinIdx].x, angleQuadruples[angleQuadrupleMinIdx].y, angleQuadruples[angleQuadrupleMinIdx].b, 360);
+        angleQuadruples[angleQuadrupleMinIdx] = new AngleQuadruple(angleQuadruples[angleQuadrupleMinIdx].x, angleQuadruples[angleQuadrupleMinIdx].y, angleQuadruples[angleQuadrupleMinIdx].a, 0);
         Arrays.sort(angleQuadruples, Comparator.comparingDouble(o -> ((o.a + o.b) / 2.0) % 360.0));
         return angleQuadruples;
     }
