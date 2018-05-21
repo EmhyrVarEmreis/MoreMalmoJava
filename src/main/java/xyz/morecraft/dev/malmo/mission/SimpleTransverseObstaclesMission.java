@@ -61,15 +61,16 @@ public class SimpleTransverseObstaclesMission extends MissionWithObserveGrid<Sim
         MissionSpec missionSpec = new MissionSpec();
         missionSpec.timeLimitInSeconds(600);
         missionSpec.allowAllDiscreteMovementCommands();
-        System.out.println();
+        log.info("Allowed commands");
         StringVector listOfCommandHandlers = missionSpec.getListOfCommandHandlers(0);
         for (int i = 0; i < listOfCommandHandlers.size(); i++) {
             String x = listOfCommandHandlers.get(i);
-            System.out.println(x);
+            log.info("{} --->", x);
             StringVector allowedCommands = missionSpec.getAllowedCommands(0, x);
             for (int l = 0; l < allowedCommands.size(); l++) {
-                System.out.println("\t" + allowedCommands.get(l));
+                log.info(allowedCommands.get(l));
             }
+            log.info("{} <--- ", x);
         }
 
         TerrainGen.generator.setSeed(4561); // 777 V2
