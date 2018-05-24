@@ -31,6 +31,10 @@ public class WayUtils {
         return (getAngle(x1, z1, x2, z2) + 90) % 360;
     }
 
+    public static double getSymmetricAngle(double refAngle, double currAngle) {
+        return 180 - Math.abs((currAngle + refAngle) % 360 - 180);
+    }
+
     public static CardinalDirection getOppositeSimpleDimension(final CardinalDirection dim) {
         if (dim == N) {
             return S;
