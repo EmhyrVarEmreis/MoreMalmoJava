@@ -59,7 +59,7 @@ public abstract class DijkstraAlgorithm2D implements Algorithm2D {
                     final int l = j - transformValue[0];
                     if (k >= 0 && l >= 0 && k < grid.length && l < grid[i].length && grid[k][l]) {
                         final Vertex vTmp = getVertex.apply(k, l);
-                        vertex.neighbours.put(vTmp, new Vertex.VertexNeighbour(vTmp, dirTransform.getKey(), getWeight(j, i, l, k)));
+                        vertex.neighbours.put(vTmp, new Vertex.VertexNeighbour(vTmp, dirTransform.getKey(), getWeight(i, j, k, l)));
                     }
                 }
             }

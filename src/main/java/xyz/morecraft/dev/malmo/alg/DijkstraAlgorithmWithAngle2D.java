@@ -21,9 +21,11 @@ public class DijkstraAlgorithmWithAngle2D extends DijkstraAlgorithm2D {
 
     @Override
     protected double getWeight(int x0, int y0, int x1, int y1) {
-        final double abs = WayUtils.getSymmetricAngle(WayUtils.getCorrectedAngle(2, 2, x0, y0), angle);
-        weights[y0][x0] = abs;
-        return abs;
+//        final double abs = WayUtils.getSymmetricAngle(WayUtils.getCorrectedAngle(x0, y0, x1, y1), angle);
+//        if (x0 == 2 && y0 == 2) {
+//            weights[x1][y1] = abs;
+//        }
+        return WayUtils.getSymmetricAngle(WayUtils.getCorrectedAngle(x0, y0, x1, y1), angle);
     }
 
     private static final double[][] weights = new double[5][5];
@@ -39,7 +41,7 @@ public class DijkstraAlgorithmWithAngle2D extends DijkstraAlgorithm2D {
         };
         final boolean[][] grid = SimpleWalker.toBooleanGrid(rawGrid, rawGrid.length);
         gridVisualizer.updateGrid(rawGrid);
-        final double angle = 0;
+        final double angle = 22.5;
         System.out.println(((int) angle) + "°");
         gridVisualizer.drawAngle(angle);
         final IntPoint3D intersectionPoint = PointIntersection.getIntersectionPoint(angle, grid);
