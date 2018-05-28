@@ -76,7 +76,6 @@ public final class PointIntersection {
                 break;
             }
             j = Math.abs((start - i) % angleQuadruples.length);
-            System.out.println(angleQuadruples[j]);
             if (angleQuadruples[j].a <= angle && angle < angleQuadruples[j].b) {
                 found = angleQuadruples[start = j];
                 break;
@@ -105,7 +104,7 @@ public final class PointIntersection {
         final double a;
         final double b;
 
-        public AngleQuadruple(int x, int y, double a, double b) {
+        private AngleQuadruple(int x, int y, double a, double b) {
             this.x = x;
             this.y = y;
             this.a = a;
