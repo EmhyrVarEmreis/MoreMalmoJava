@@ -118,6 +118,9 @@ public class WorldObservation {
 
     public String[] getGrid(String name, int x) {
         final Object o = map.get(name);
+        if (Objects.isNull(o)) {
+            return null;
+        }
         final String[] t = new String[x];
         if (o instanceof List) {
             List l = List.class.cast(o);
@@ -133,6 +136,9 @@ public class WorldObservation {
 
     public String[][][] getGrid(String name, int x, int y, int z) {
         final Object o = map.get(name);
+        if (Objects.isNull(o)) {
+            return null;
+        }
         final String[][][] t = new String[y][z][x];
         if (o instanceof List) {
             List l = List.class.cast(o);

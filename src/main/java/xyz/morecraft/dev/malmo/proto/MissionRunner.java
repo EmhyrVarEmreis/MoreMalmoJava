@@ -12,4 +12,7 @@ public interface MissionRunner<T extends Mission<?>> {
 
     WorldState step(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation, T mission) throws Exception;
 
+    default void end() {
+    }
+
 }

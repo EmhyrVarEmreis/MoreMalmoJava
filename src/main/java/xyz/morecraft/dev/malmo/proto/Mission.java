@@ -3,6 +3,7 @@ package xyz.morecraft.dev.malmo.proto;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.microsoft.msr.malmo.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,13 +17,16 @@ import java.io.FileWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Type;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 public abstract class Mission<Record> {
 
     private static Logger log = LoggerFactory.getLogger(Mission.class);
+
+    public static int MAP_GRID_RADIUS = 100;
+    public static String MAP_GRID_NAME = "MAP";
 
     @Getter
     private String[] argv;
@@ -53,11 +57,6 @@ public abstract class Mission<Record> {
         throw new NotImplementedException();
     }
 
-    public IntPoint3D getCorrectedDestinationPoint() {
-        final IntPoint3D point = getDestinationPoint().clone();
-        return new IntPoint3D(-1 * point.z, point.y, point.x);
-    }
-
     protected abstract AgentHost initAgentHost();
 
     protected abstract MissionSpec initMissionSpec();
@@ -78,14 +77,16 @@ public abstract class Mission<Record> {
         this.recordList.add(record);
     }
 
-    public <T extends Mission<Record>> void run(MissionRunner<T> missionRunner) throws Exception {
+    public <T extends Mission<Record>> MissionResult run(MissionRunner<T> missionRunner) throws Exception {
         @SuppressWarnings("unchecked") final T thiss = (T) this;
         missionRunner.prepare(thiss);
-        run((agentHost, worldState, worldObservation) -> {
+        final MissionResult missionResult = run((agentHost, worldState, worldObservation) -> {
             final WorldState tmpState = missionRunner.step(agentHost, worldState, worldObservation, thiss);
             Thread.sleep(missionRunner.stepInterval());
             return tmpState;
         });
+        missionRunner.end();
+        return missionResult;
     }
 
 //    public <T extends Mission<Record>> void run(UniversalMissionRunner missionRunner) throws Exception {
@@ -96,7 +97,7 @@ public abstract class Mission<Record> {
 //        });
 //    }
 
-    private <T extends Mission<Record>> void run(MissionRunnerWrapper missionRunnerWrapper) throws Exception {
+    private <T extends Mission<Record>> MissionResult run(MissionRunnerWrapper missionRunnerWrapper) throws Exception {
         log.info("Waiting for the mission to start");
         this.isRunning = true;
         times[0] = System.nanoTime();
@@ -123,7 +124,7 @@ public abstract class Mission<Record> {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
                 log.error("User interrupted while waiting for mission to start.");
-                return;
+                return null;
             }
             worldState = agentHost.peekWorldState();
             for (int i = 0; i < worldState.getErrors().size(); i++) {
@@ -134,13 +135,25 @@ public abstract class Mission<Record> {
         log.info("Mission started!");
         times[1] = System.nanoTime();
 
+        Collection<WorldObservation> worldObservationCollection = new ArrayList<>(10240);
+        WorldObservation lastWorldObservation = null;
+
         boolean isEnd = false;
         do {
             try {
                 worldState = agentHost.peekWorldState();
                 final WorldObservation worldObservation = WorldObservation.fromWorldState(worldState);
+                if (Objects.nonNull(worldObservation)) {
+                    if (Objects.isNull(lastWorldObservation) || !worldObservation.getPos().equals(lastWorldObservation.getPos())) {
+                        worldObservationCollection.add(worldObservation);
+                        lastWorldObservation = worldObservation;
+                    }
+                }
                 isGoalAcquired(agentHost, worldState, worldObservation);
-                worldState = missionRunnerWrapper.go(agentHost, worldState, worldObservation);
+                try {
+                    worldState = missionRunnerWrapper.go(agentHost, worldState, worldObservation);
+                } catch (NullPointerException ignored) {
+                }
             } catch (GoalReachedException e) {
                 log.info("Goal acquired! message=[{}]", e.getMessage());
                 isEnd = true;
@@ -169,16 +182,41 @@ public abstract class Mission<Record> {
         times[3] = System.nanoTime();
 
         this.isRunning = false;
-        log.info("Mission has stopped; fullTime={}s, preparingTime={}s, runningTime={}s, finishingTime={}s", getDT(times[0], times[3]), getDT(times[0], times[1]), getDT(times[1], times[2]), getDT(times[2], times[3]));
-        System.exit(0);
+        final WorldState finalWorldState = worldState;
+        final MissionResult result = new MissionResult(
+                getDTInSeconds(times[0], times[3]),
+                getDTInSeconds(times[0], times[1]),
+                getDTInSeconds(times[1], times[2]),
+                getDTInSeconds(times[2], times[3]),
+                IntStream.range(0, (int) worldState.getRewards().size()).mapToDouble(value -> finalWorldState.getRewards().get(value).getValue()).sum(),
+                worldObservationCollection
+        );
+        log.info("Mission has stopped; fullTime={}s, preparingTime={}s, runningTime={}s, finishingTime={}s", formatTime(result.getFullTime()), formatTime(result.getPreparingTime()), formatTime(result.getRunningTime()), formatTime(result.getFinishingTime()));
+
+        return result;
     }
 
-    private static String getDT(final long a, final long b) {
-        return String.format("%.4f", (b - a) * 1.0 / TimeUnit.SECONDS.toNanos(1) * 1.0);
+    private static double getDTInSeconds(final long a, final long b) {
+        return (b - a) * 1.0 / TimeUnit.SECONDS.toNanos(1) * 1.0;
     }
 
-    private static interface MissionRunnerWrapper {
+    private static String formatTime(final double time) {
+        return String.format("%.4f", time);
+    }
+
+    private interface MissionRunnerWrapper {
         WorldState go(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation) throws Exception;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class MissionResult {
+        private double fullTime;
+        private double preparingTime;
+        private double runningTime;
+        private double finishingTime;
+        private double reward;
+        private Collection<WorldObservation> worldObservationCollection;
     }
 
 }

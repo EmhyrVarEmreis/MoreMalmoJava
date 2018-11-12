@@ -9,6 +9,7 @@ import xyz.morecraft.dev.malmo.util.CardinalDirection;
 import xyz.morecraft.dev.malmo.util.GridVisualizer;
 import xyz.morecraft.dev.malmo.util.WorldObservation;
 
+import java.awt.event.WindowEvent;
 import java.util.Objects;
 
 public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implements MissionRunner<T> {
@@ -39,6 +40,13 @@ public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implemen
         mission.setDefaultObserveGridRadius(getDefaultObserveGridRadius());
     }
 
+    @Override
+    public void end() {
+        if (Objects.nonNull(gridVisualizer)) {
+            gridVisualizer.dispatchEvent(new WindowEvent(gridVisualizer, WindowEvent.WINDOW_CLOSING));
+        }
+    }
+
     protected abstract int getDefaultObserveGridRadius();
 
     @Override
@@ -55,13 +63,17 @@ public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implemen
         }
 
         final CardinalDirection goDirection = calculateNextStep(worldObservation, mission);
+        sendCommands(agentHost, goDirection);
+
+        return worldState;
+    }
+
+    private void sendCommands(AgentHost agentHost, CardinalDirection goDirection) {
         if (isContinuous) {
             sendContinuousCommands(agentHost, goDirection);
         } else {
             sendNonContinuousCommands(agentHost, goDirection);
         }
-
-        return worldState;
     }
 
     private void sendContinuousCommands(final AgentHost agentHost, final CardinalDirection goDirection) {

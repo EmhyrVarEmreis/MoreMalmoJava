@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import xyz.morecraft.dev.malmo.proto.GoalReachedException;
 import xyz.morecraft.dev.malmo.proto.MissionWithObserveGrid;
 import xyz.morecraft.dev.malmo.util.IntPoint3D;
@@ -25,42 +24,42 @@ public class SimpleTransverseObstaclesMission extends MissionWithObserveGrid<Sim
     public final static String OBSERVE_DISTANCE_1 = "End";
     public final static double tol = 0.25f;
 
-    @Getter
-    private Pair<IntPoint3D, IntPoint3D> startingPointWithDestinationPointPair;
+    private static AgentHost AGENT_HOST;
+
+    private TerrainGen.Result terrainGenResult;
 
     public SimpleTransverseObstaclesMission(String[] argv, int defaultObserveGridRadius) {
         super(argv, defaultObserveGridRadius);
     }
 
     @Override
-    protected AgentHost initAgentHost() {
-        return new AgentHost();
+    protected synchronized AgentHost initAgentHost() {
+        if (Objects.isNull(AGENT_HOST)) {
+            AGENT_HOST = new AgentHost();
+        }
+        return AGENT_HOST;
     }
 
     @Override
     public IntPoint3D getStartingPoint() {
-        return startingPointWithDestinationPointPair.getLeft();
+        return terrainGenResult.getStartingPoint();
     }
 
     @Override
     public IntPoint3D getDestinationPoint() {
-        return startingPointWithDestinationPointPair.getRight();
+        return terrainGenResult.getDestinationPoint();
     }
 
     @Override
     protected void isGoalAcquired(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation) throws GoalReachedException {
-        if (Objects.nonNull(worldObservation)
-                && Objects.nonNull(startingPointWithDestinationPointPair)
-                && worldObservation.getPos().withY(0).floor().equals(startingPointWithDestinationPointPair.getRight().withY(0).floor())) {
-            throw new GoalReachedException("Destination point reached!");
-        }
     }
 
     @Override
     protected MissionSpec initMissionSpec() {
         MissionSpec missionSpec = new MissionSpec();
-        missionSpec.timeLimitInSeconds(600);
+        missionSpec.timeLimitInSeconds(20);
         missionSpec.allowAllDiscreteMovementCommands();
+
         log.info("Allowed commands");
         StringVector listOfCommandHandlers = missionSpec.getListOfCommandHandlers(0);
         for (int i = 0; i < listOfCommandHandlers.size(); i++) {
@@ -73,14 +72,30 @@ public class SimpleTransverseObstaclesMission extends MissionWithObserveGrid<Sim
             log.info("{} <--- ", x);
         }
 
+//        missionSpec.forceWorldReset();
         TerrainGen.generator.setSeed(4561); // 777 V2
 //        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 55, 150, 1, "lava", 0);
-        startingPointWithDestinationPointPair = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 10, 10, 1, "dirt", 1);
+        terrainGenResult = TerrainGen.emptyRoomWithTransverseObstacles(missionSpec, 20, 20, 1, "dirt", 1);
 //        startingPointWithDestinationPointPair = TerrainGen.maze(missionSpec, 21, 50);
 
+        missionSpec.rewardForReachingPosition(
+                terrainGenResult.getDestinationPoint().x.floatValue(),
+                terrainGenResult.getDestinationPoint().y.floatValue(),
+                terrainGenResult.getDestinationPoint().z.floatValue(),
+                100,
+                (float) 0.49
+        );
+        missionSpec.endAt(
+                terrainGenResult.getDestinationPoint().x.floatValue(),
+                terrainGenResult.getDestinationPoint().y.floatValue(),
+                terrainGenResult.getDestinationPoint().z.floatValue(),
+                (float) 0.49
+        );
+
         missionSpec.observeGrid(-getDefaultObserveGridRadius(), -1, -getDefaultObserveGridRadius(), getDefaultObserveGridRadius(), -1, getDefaultObserveGridRadius(), getDefaultObserveGridName());
-        missionSpec.observeDistance(startingPointWithDestinationPointPair.getRight().fX() + 0.5f, startingPointWithDestinationPointPair.getRight().fY() + 1, startingPointWithDestinationPointPair.getRight().fZ() + 0.5f, OBSERVE_DISTANCE_1);
-        missionSpec.startAt(startingPointWithDestinationPointPair.getLeft().fX(), startingPointWithDestinationPointPair.getLeft().fY(), startingPointWithDestinationPointPair.getLeft().fZ());
+        missionSpec.observeGrid(-MAP_GRID_RADIUS, -1, -MAP_GRID_RADIUS, MAP_GRID_RADIUS, -1, MAP_GRID_RADIUS, MAP_GRID_NAME);
+        missionSpec.observeDistance(terrainGenResult.getDestinationPoint().fX() + 0.5f, terrainGenResult.getDestinationPoint().fY() + 1, terrainGenResult.getDestinationPoint().fZ() + 0.5f, OBSERVE_DISTANCE_1);
+        missionSpec.startAt(terrainGenResult.getStartingPoint().fX(), terrainGenResult.getStartingPoint().fY(), terrainGenResult.getStartingPoint().fZ());
         missionSpec.setTimeOfDay(12000, false);
 
         return missionSpec;
@@ -95,7 +110,7 @@ public class SimpleTransverseObstaclesMission extends MissionWithObserveGrid<Sim
 
     @Override
     protected InputOutputBundle getTrainingSetFromRecord(List<Record> recordList) {
-        Set<Record> recordSet = recordList.stream().filter(record -> !record.getKeys().isEmpty()).distinct().collect(Collectors.toSet());
+        Set<Record> recordSet = recordList.stream().filter(record -> !record.getKeys().isEmpty()).collect(Collectors.toSet());
 
         Map<String[][][], Map<Collection<String>, Integer>> map = new TreeMap<>(SimpleTransverseObstaclesMission::compareGrids);
 
@@ -118,7 +133,7 @@ public class SimpleTransverseObstaclesMission extends MissionWithObserveGrid<Sim
         }
 
         recordSet.clear();
-        //noinspection ConstantConditions
+        //noinspection OptionalGetWithoutIsPresent
         map.forEach((strings, collectionIntegerMap) -> recordSet.add(new Record(
                 collectionIntegerMap.entrySet().stream().max(Comparator.comparing(Map.Entry::getValue)).get().getKey(),
                 strings

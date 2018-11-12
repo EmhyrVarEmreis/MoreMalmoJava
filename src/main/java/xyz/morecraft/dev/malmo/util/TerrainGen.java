@@ -1,8 +1,8 @@
 package xyz.morecraft.dev.malmo.util;
 
 import com.microsoft.msr.malmo.MissionSpec;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.Random;
 import java.util.function.BiConsumer;
@@ -11,7 +11,7 @@ public class TerrainGen {
 
     public static Random generator = new Random();
 
-    public static Pair<IntPoint3D, IntPoint3D> emptyRoomWithTransverseObstacles(MissionSpec spec, int xL, int zL, int stepDistance, String block, int yOffset) {
+    public static Result emptyRoomWithTransverseObstacles(MissionSpec spec, int xL, int zL, int stepDistance, String block, int yOffset) {
         final int h = 80;
         final int hMax = 90;
         final IntPoint3D p1 = new IntPoint3D((int) Math.round(xL / 2.0), h, 0);
@@ -50,7 +50,9 @@ public class TerrainGen {
                     if (generator.nextBoolean()) {
                         final int xx = randInt(1, 4);
                         for (int i = 0; i < xx; i++) {
-                            drawer.accept(x, z);
+                            if (x <= xL) {
+                                drawer.accept(x, z);
+                            }
                             x++;
                             x++;
                         }
@@ -63,13 +65,14 @@ public class TerrainGen {
         p1.x += 0.5f;
         p2.x += 0.5f;
         p1.y += 2;
-        p2.y += 2;
+        p2.y += 1;
         p1.z += 0.5f;
         p2.z += 0.5f;
-        return new ImmutablePair<>(p1, p2);
+
+        return new Result(p1, p2);
     }
 
-    public static Pair<IntPoint3D, IntPoint3D> maze(MissionSpec spec, int xL, int zL) {
+    public static Result maze(MissionSpec spec, int xL, int zL) {
         final int h = 230;
         final int hMax = 238;
         final IntPoint3D p1 = new IntPoint3D((int) Math.round(xL / 2.0), h, 0);
@@ -93,12 +96,18 @@ public class TerrainGen {
         p2.y += 2;
         p1.z += 0.5f;
         p2.z += 0.5f;
-        return new ImmutablePair<>(p1, p2);
-
+        return new Result(p1, p2);
     }
 
     private static int randInt(int min, int max) {
         return generator.nextInt((max - min) + 1) + min;
+    }
+
+    @AllArgsConstructor
+    @Getter
+    public static class Result {
+        private IntPoint3D startingPoint;
+        private IntPoint3D destinationPoint;
     }
 
 }

@@ -153,7 +153,7 @@ public class GridVisualizer extends JFrame {
             colorMap = new TreeMap<>(String::compareToIgnoreCase);
             colorMap.put(BLOCK_AIR, Color.LIGHT_GRAY);
             colorMap.put(BLOCK_STONE, Color.GRAY);
-            colorMap.put(BLOCK_GLOWSTONE, Color.YELLOW);
+            colorMap.put(BLOCK_GLOWSTONE, Color.ORANGE);
             colorMap.put(BLOCK_GRASS, new Color(0, 100, 0));
             colorMap.put(BLOCK_DIRT, new Color(139, 69, 19));
         }

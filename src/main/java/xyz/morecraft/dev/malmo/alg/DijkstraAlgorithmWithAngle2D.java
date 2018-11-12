@@ -41,7 +41,7 @@ public class DijkstraAlgorithmWithAngle2D extends DijkstraAlgorithm2D {
         };
         final boolean[][] grid = SimpleWalker.toBooleanGrid(rawGrid, rawGrid.length);
         gridVisualizer.updateGrid(rawGrid);
-        final double angle = 22.5;
+        final double angle = 0;
         System.out.println(((int) angle) + "°");
         gridVisualizer.drawAngle(angle);
         final IntPoint3D intersectionPoint = PointIntersection.getIntersectionPoint(angle, grid);
