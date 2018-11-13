@@ -51,10 +51,6 @@ public abstract class SimpleWalker<T extends MissionWithObserveGrid<?>> implemen
 
     @Override
     public WorldState step(AgentHost agentHost, WorldState worldState, WorldObservation worldObservation, T mission) {
-        if (Objects.isNull(worldObservation)) {
-            return worldState;
-        }
-
         final double yaw = worldObservation.getYaw();
         if (yaw > pitchYawTol0 || yaw < pitchYawTol1) {
             agentHost.sendCommand("turn " + (-1 * yaw / 150));

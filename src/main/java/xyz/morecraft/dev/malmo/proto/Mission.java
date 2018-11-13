@@ -135,7 +135,7 @@ public abstract class Mission<Record> {
         log.info("Mission started!");
         times[1] = System.nanoTime();
 
-        Collection<WorldObservation> worldObservationCollection = new ArrayList<>(10240);
+        Collection<WorldObservation> worldObservationCollection = new ArrayList<>(1024);
         WorldObservation lastWorldObservation = null;
 
         boolean isEnd = false;
@@ -143,15 +143,15 @@ public abstract class Mission<Record> {
             try {
                 worldState = agentHost.peekWorldState();
                 final WorldObservation worldObservation = WorldObservation.fromWorldState(worldState);
-                if (Objects.nonNull(worldObservation)) {
-                    if (Objects.isNull(lastWorldObservation) || !worldObservation.getPos().equals(lastWorldObservation.getPos())) {
-                        worldObservationCollection.add(worldObservation);
-                        lastWorldObservation = worldObservation;
-                    }
-                }
-                isGoalAcquired(agentHost, worldState, worldObservation);
                 try {
-                    worldState = missionRunnerWrapper.go(agentHost, worldState, worldObservation);
+                    if (Objects.nonNull(worldObservation)) {
+                        if (Objects.isNull(lastWorldObservation) || !worldObservation.getPos().equals(lastWorldObservation.getPos())) {
+                            worldObservationCollection.add(worldObservation);
+                            lastWorldObservation = worldObservation;
+                        }
+                        isGoalAcquired(agentHost, worldState, worldObservation);
+                        worldState = missionRunnerWrapper.go(agentHost, worldState, worldObservation);
+                    }
                 } catch (NullPointerException ignored) {
                 }
             } catch (GoalReachedException e) {
